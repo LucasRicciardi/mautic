@@ -34,9 +34,9 @@ $animate   = (!empty($preview) && !empty($props['animate'])) ? ' mf-animate' : '
                     <div class="mf-tagline"><?php echo $props['content']['tagline']; ?></div>
                 <?php endif; ?>
                 <div class="mf-inner-container">
-                    <?php if ('form' == $focus['type']): ?>
+                    <?php if ($focus['type'] == 'form'): ?>
                         {focus_form}
-                    <?php elseif ('link' == $focus['type']): ?>
+                    <?php elseif ($focus['type'] == 'link'): ?>
                         <a href="<?php echo (empty($preview)) ? $clickUrl
                             : '#'; ?>" class="mf-link" target="<?php echo ($props['content']['link_new_window']) ? '_new' : '_parent'; ?>">
                             <?php echo $props['content']['link_text']; ?>
@@ -47,6 +47,6 @@ $animate   = (!empty($preview) && !empty($props['animate'])) ? ' mf-animate' : '
             </div>
         </div>
     </div>
-<?php if ('modal' == $style): ?>
+<?php if ($style == 'modal'): ?>
     <div class="mf-move-to-parent mf-<?php echo $style; ?>-overlay mf-<?php echo $style; ?>-overlay-<?php echo $focus['id']; ?>"></div>
 <?php endif; ?>

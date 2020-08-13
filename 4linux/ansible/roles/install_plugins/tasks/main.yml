@@ -1,0 +1,9 @@
+---
+
+- name: clear mautic cache
+  command: docker exec 4linux_mautic_1 sh -c 'rm -rf /var/www/html/app/cache/*'
+
+- name: call reload plugins api
+  uri:
+    url: http://localhost:8001/s/plugins/reload
+    method: GET

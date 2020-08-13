@@ -82,6 +82,14 @@ class TwitterCommandHelper
 
     /**
      * TwitterCommandHelper constructor.
+     *
+     * @param LeadModel              $leadModel
+     * @param FieldModel             $fieldModel
+     * @param MonitoringModel        $monitoringModel
+     * @param PostCountModel         $postCountModel
+     * @param TranslatorInterface    $translator
+     * @param EntityManagerInterface $em
+     * @param CoreParametersHelper   $coreParametersHelper
      */
     public function __construct(
         LeadModel $leadModel,
@@ -99,8 +107,8 @@ class TwitterCommandHelper
         $this->translator      = $translator;
         $this->em              = $em;
 
-        $this->translator->setLocale($coreParametersHelper->get('locale', 'en_US'));
-        $this->twitterHandleField = $coreParametersHelper->get('twitter_handle_field', 'twitter');
+        $this->translator->setLocale($coreParametersHelper->getParameter('mautic.locale', 'en_US'));
+        $this->twitterHandleField = $coreParametersHelper->getParameter('mautic.twitter_handle_field', 'twitter');
     }
 
     /**
@@ -127,6 +135,9 @@ class TwitterCommandHelper
         return $this->manipulatedLeads;
     }
 
+    /**
+     * @param OutputInterface $output
+     */
     public function setOutput(OutputInterface $output)
     {
         $this->output = $output;
@@ -192,7 +203,7 @@ class TwitterCommandHelper
             $usersByHandles[] = $expr->literal($status['user']['screen_name']);
 
             // Split the twitter user's name into its parts if we're matching to contacts by name
-            if ($monitorProperties['checknames'] && $status['user']['name'] && false !== strpos($status['user']['name'], ' ')) {
+            if ($monitorProperties['checknames'] && $status['user']['name'] && strpos($status['user']['name'], ' ') !== false) {
                 list($firstName, $lastName) = $this->splitName($status['user']['name']);
 
                 if (!empty($firstName) && !empty($lastName)) {
@@ -222,7 +233,7 @@ class TwitterCommandHelper
 
             // Key by twitter handle
             $twitterLeads = [];
-            foreach ($leads as $lead) {
+            foreach ($leads as $leadId => $lead) {
                 $fields                       = $lead->getFields();
                 $twitterHandle                = strtolower($fields[$handleFieldGroup][$this->twitterHandleField]['value']);
                 $twitterLeads[$twitterHandle] = $lead;
@@ -260,7 +271,7 @@ class TwitterCommandHelper
             // key by name
             $namedLeads = [];
             /** @var Lead $lead */
-            foreach ($leadsByName as $lead) {
+            foreach ($leadsByName as $leadId => $lead) {
                 $firstName                            = $lead->getFirstname();
                 $lastName                             = $lead->getLastname();
                 $namedLeads[$firstName.' '.$lastName] = $lead;
@@ -365,7 +376,8 @@ class TwitterCommandHelper
     /**
      * Set the monitor's stat record with the metadata.
      *
-     * @param array $searchMeta
+     * @param Monitoring $monitor
+     * @param array      $searchMeta
      */
     public function setMonitorStats(Monitoring $monitor, $searchMeta)
     {

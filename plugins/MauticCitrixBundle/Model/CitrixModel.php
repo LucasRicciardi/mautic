@@ -40,6 +40,9 @@ class CitrixModel extends FormModel
 
     /**
      * CitrixModel constructor.
+     *
+     * @param LeadModel  $leadModel
+     * @param EventModel $eventModel
      */
     public function __construct(LeadModel $leadModel, EventModel $eventModel)
     {
@@ -211,6 +214,7 @@ class CitrixModel extends FormModel
      * @param string $product
      * @param string $email
      * @param string $eventType
+     * @param array  $eventNames
      *
      * @return int
      */
@@ -293,6 +297,8 @@ class CitrixModel extends FormModel
      * @param string          $eventName
      * @param string          $eventDesc
      * @param string          $eventType
+     * @param array           $contactsToAdd
+     * @param array           $emailsToRemove
      * @param OutputInterface $output
      *
      * @return int

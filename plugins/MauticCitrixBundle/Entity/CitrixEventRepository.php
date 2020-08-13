@@ -54,8 +54,9 @@ class CitrixEventRepository extends CommonRepository
     }
 
     /**
-     * @param      $product
-     * @param null $leadId
+     * @param       $product
+     * @param null  $leadId
+     * @param array $options
      *
      * @return array
      */
@@ -114,6 +115,8 @@ class CitrixEventRepository extends CommonRepository
 
     /**
      * Get a list of entities.
+     *
+     * @param array $args
      *
      * @return Paginator
      */

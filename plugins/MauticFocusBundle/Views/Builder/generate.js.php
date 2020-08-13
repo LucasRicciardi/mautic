@@ -11,18 +11,18 @@
 $style          = $focus['style'];
 $props          = $focus['properties'];
 $useScrollEvent = in_array($props['when'], ['scroll_slight', 'scroll_middle', 'scroll_bottom']);
-$useUnloadEvent = ('leave' == $props['when']);
+$useUnloadEvent = ($props['when'] == 'leave');
 $useTimeout     = (int) $props['timeout'];
-if ('5seconds' == $props['when']) {
+if ($props['when'] == '5seconds') {
     $useTimeout = 5;
-} elseif ('minute' == $props['when']) {
+} elseif ($props['when'] == 'minute') {
     $useTimeout = 60;
 }
 if ($useTimeout) {
     $timeout = $useTimeout * 1000;
 }
 
-$debug          = ('dev' == $app->getEnvironment()) ? 'true' : 'false';
+$debug          = ($app->getEnvironment() == 'dev') ? 'true' : 'false';
 $animate        = (!isset($props['animate']) || !empty($props['animate']));
 $linkActivation = (!isset($props['link_activation']) || !empty($props['link_activation']));
 
@@ -79,7 +79,7 @@ switch ($style) {
         var Focus = {
             debug: <?php echo $debug; ?>,
             modalsDismissed: {},
-            ignoreConverted: <?php echo ('notification' !== $focus['type'] && !empty($props['stop_after_conversion'])) ? 'true' : 'false'; ?>,
+            ignoreConverted: <?php echo ($focus['type'] !== 'notification' && !empty($props['stop_after_conversion'])) ? 'true' : 'false'; ?>,
 
             // Initialize the focus
             initialize: function () {
@@ -95,7 +95,7 @@ switch ($style) {
 
             // Register click events for toggling bar, closing windows, etc
             registerClickEvents: function () {
-                <?php if ('bar' == $style): ?>
+                <?php if ($style == 'bar'): ?>
                 var isTop = Focus.hasClass(Focus.iframeFocus, 'mf-bar-top');
                 Focus.setDefaultBarPosition(isTop);
 
@@ -136,14 +136,14 @@ switch ($style) {
                 });
                 <?php endif; ?>
 
-                <?php if ('link' == $focus['type']): ?>
+                <?php if ($focus['type'] == 'link'): ?>
                 var links = Focus.iframeDoc.getElementsByClassName('mf-link');
                 if (links.length) {
                     links[0].addEventListener('click', function (event) {
                         Focus.convertVisitor();
                     });
                 }
-                <?php elseif ('form' == $focus['type']): ?>
+                <?php elseif ($focus['type'] == 'form'): ?>
                 var buttons = Focus.iframeDoc.getElementsByClassName('mauticform-button');
                 if (buttons.length) {
                     buttons[0].addEventListener('click', function (event) {
@@ -494,7 +494,7 @@ switch ($style) {
                 // Register events
                 Focus.registerClickEvents();
 
-                <?php if ('leave' == $props['when']): ?>
+                <?php if ($props['when'] == 'leave'): ?>
                 // Ensure user can leave
                 document.documentElement.removeEventListener('mouseleave', Focus.engageVisitor);
                 <?php endif; ?>
@@ -506,7 +506,7 @@ switch ($style) {
                 Focus.cookies.removeItem('mautic_focus_<?php echo $focus['id']; ?>');
                 Focus.cookies.setItem('mautic_focus_<?php echo $focus['id']; ?>', now, Infinity, '/');
 
-                <?php if ('bar' == $style): ?>
+                <?php if ($style == 'bar'): ?>
                 var collapser = document.getElementsByClassName('mf-bar-collapser-<?php echo $focus['id']; ?>');
 
                 if (animate) {

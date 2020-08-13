@@ -12,9 +12,8 @@
 namespace MauticPlugin\MauticSocialBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -28,16 +27,23 @@ class TweetSendType extends AbstractType
      */
     protected $router;
 
+    /**
+     * @param RouterInterface $router
+     */
     public function __construct(RouterInterface $router)
     {
         $this->router = $router;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
             'channelId',
-            TweetListType::class,
+            'tweet_list',
             [
                 'label'      => 'mautic.integration.Twitter.send.selecttweet',
                 'label_attr' => ['class' => 'control-label'],
@@ -68,7 +74,7 @@ class TweetSendType extends AbstractType
 
             $builder->add(
                 'newTweetButton',
-                ButtonType::class,
+                'button',
                 [
                     'attr' => [
                         'class'   => 'btn btn-primary btn-nospin',
@@ -111,15 +117,18 @@ class TweetSendType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    /**
+     * @param OptionsResolverInterface $resolver
+     */
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefined(['update_select']);
+        $resolver->setOptional(['update_select']);
     }
 
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'tweetsend_list';
     }

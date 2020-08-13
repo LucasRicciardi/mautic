@@ -1,0 +1,5 @@
+---
+- name: Build image
+  command: ls
+    
+    

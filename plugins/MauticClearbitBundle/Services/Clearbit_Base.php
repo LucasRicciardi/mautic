@@ -19,18 +19,18 @@ class Clearbit_Base
     const REQUEST_LATENCY = 0.2;
     const USER_AGENT      = 'mautic/clearbit-php-0.1.0';
 
-    private $_next_req_time;
+    private $_next_req_time = null;
 
     protected $_baseUri     = '';
     protected $_resourceUri = '';
     protected $_version     = 'v2';
 
-    protected $_apiKey;
-    protected $_webhookId;
+    protected $_apiKey    = null;
+    protected $_webhookId = null;
 
-    public $response_obj;
-    public $response_code;
-    public $response_json;
+    public $response_obj  = null;
+    public $response_code = null;
+    public $response_json = null;
 
     /**
      * Slow down calls to the Clearbit API if needed.
@@ -113,7 +113,7 @@ class Clearbit_Base
         $headers = [];
 
         foreach (explode("\r\n", $response_headers) as $i => $line) {
-            if (0 === $i) {
+            if ($i === 0) {
                 $headers['http_code'] = $line;
             } else {
                 list($key, $value) = explode(': ', $line);

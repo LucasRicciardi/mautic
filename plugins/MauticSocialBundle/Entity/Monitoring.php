@@ -77,6 +77,9 @@ class Monitoring extends FormEntity
      */
     private $publishUp;
 
+    /**
+     * @param ORM\ClassMetadata $metadata
+     */
     public static function loadMetadata(ORM\ClassMetadata $metadata)
     {
         $builder = new ClassMetadataBuilder($metadata);
@@ -105,6 +108,8 @@ class Monitoring extends FormEntity
 
     /**
      * Constraints for required fields.
+     *
+     * @param ClassMetadata $metadata
      */
     public static function loadValidatorMetadata(ClassMetadata $metadata)
     {
@@ -383,7 +388,7 @@ class Monitoring extends FormEntity
         }
 
         // clean up property array for the twitter handle
-        if ('twitter_handle' == $this->getNetworkType()) {
+        if ($this->getNetworkType() == 'twitter_handle') {
             $this->setProperties(
                 [
                     'handle'     => $property['handle'],
@@ -393,7 +398,7 @@ class Monitoring extends FormEntity
         }
 
         // clean up property array for the hashtag
-        if ('twitter_hashtag' == $this->getNetworkType()) {
+        if ($this->getNetworkType() == 'twitter_hashtag') {
             $this->setProperties(
                 [
                     'hashtag'    => $property['hashtag'],
@@ -403,7 +408,7 @@ class Monitoring extends FormEntity
         }
 
         // clean up clean up property array for the custom action
-        if ('twitter_custom' == $this->getNetworkType()) {
+        if ($this->getNetworkType() == 'twitter_custom') {
             $this->setProperties(
                 [
                     'custom' => $property['custom'],

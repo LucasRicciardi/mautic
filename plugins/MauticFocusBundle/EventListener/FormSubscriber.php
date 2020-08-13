@@ -11,18 +11,26 @@
 
 namespace MauticPlugin\MauticFocusBundle\EventListener;
 
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\FormBundle\Event as Events;
 use Mautic\FormBundle\FormEvents;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class FormSubscriber implements EventSubscriberInterface
+/**
+ * Class FormSubscriber.
+ */
+class FormSubscriber extends CommonSubscriber
 {
     /**
      * @var FocusModel
      */
-    private $model;
+    protected $model;
 
+    /**
+     * FormSubscriber constructor.
+     *
+     * @param FocusModel $model
+     */
     public function __construct(FocusModel $model)
     {
         $this->model = $model;
@@ -41,6 +49,8 @@ class FormSubscriber implements EventSubscriberInterface
 
     /**
      * Add an entry to the audit log.
+     *
+     * @param Events\FormEvent $event
      */
     public function onFormPostSave(Events\FormEvent $event)
     {
@@ -69,6 +79,8 @@ class FormSubscriber implements EventSubscriberInterface
 
     /**
      * Add a delete entry to the audit log.
+     *
+     * @param Events\FormEvent $event
      */
     public function onFormDelete(Events\FormEvent $event)
     {

@@ -11,8 +11,6 @@
 
 namespace MauticPlugin\MauticSocialBundle\Integration;
 
-use MauticPlugin\MauticSocialBundle\Form\Type\FacebookType;
-
 /**
  * Class FacebookIntegration.
  */
@@ -180,13 +178,5 @@ class FacebookIntegration extends SocialIntegration
             'timezone'    => ['type' => 'string'],
             'website'     => ['type' => 'string'],
         ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFormType()
-    {
-        return FacebookType::class;
     }
 }

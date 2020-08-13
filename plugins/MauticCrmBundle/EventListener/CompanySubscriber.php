@@ -11,25 +11,33 @@
 
 namespace MauticPlugin\MauticCrmBundle\EventListener;
 
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\LeadBundle\Event as Events;
 use Mautic\LeadBundle\LeadEvents;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticCrmBundle\Integration\Pipedrive\Export\CompanyExport;
 use MauticPlugin\MauticCrmBundle\Integration\PipedriveIntegration;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class CompanySubscriber implements EventSubscriberInterface
+/**
+ * Class LeadSubscriber.
+ */
+class CompanySubscriber extends CommonSubscriber
 {
     /**
      * @var IntegrationHelper
      */
-    private $integrationHelper;
+    protected $integrationHelper;
 
     /**
      * @var CompanyExport
      */
-    private $companyExport;
+    protected $companyExport;
 
+    /**
+     * CampaignSubscriber constructor.
+     *
+     * @param IntegrationHelper $integrationHelper
+     */
     public function __construct(IntegrationHelper $integrationHelper, CompanyExport $companyExport)
     {
         $this->integrationHelper = $integrationHelper;

@@ -56,7 +56,6 @@ class ConnectwiseApi extends CrmApi
                         break;
                     case 'errors':
                         $errors[] = $response['message'];
-                        // no break
                     case 'code':
                         $errors[] = $response['message'];
                         break;
@@ -71,7 +70,8 @@ class ConnectwiseApi extends CrmApi
     }
 
     /**
-     * @param int $page
+     * @param array $params
+     * @param int   $page
      *
      * @return mixed|string
      *
@@ -97,7 +97,8 @@ class ConnectwiseApi extends CrmApi
     }
 
     /**
-     * @param int $page
+     * @param array $params
+     * @param int   $page
      *
      * @return mixed|string
      *
@@ -126,6 +127,8 @@ class ConnectwiseApi extends CrmApi
     }
 
     /**
+     * @param array $params
+     *
      * @return mixed|string
      *
      * @throws ApiErrorException
@@ -136,7 +139,8 @@ class ConnectwiseApi extends CrmApi
     }
 
     /**
-     * @param $id
+     * @param array $params
+     * @param       $id
      *
      * @return mixed|string
      *

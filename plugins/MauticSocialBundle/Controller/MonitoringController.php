@@ -12,11 +12,13 @@
 namespace MauticPlugin\MauticSocialBundle\Controller;
 
 use Mautic\CoreBundle\Controller\FormController;
-use Mautic\CoreBundle\Form\Type\DateRangeType;
 use Mautic\CoreBundle\Helper\Chart\LineChart;
 use Mautic\LeadBundle\Controller\EntityContactsTrait;
 use MauticPlugin\MauticSocialBundle\Entity\Monitoring;
 
+/**
+ * Class MonitoringController.
+ */
 class MonitoringController extends FormController
 {
     use EntityContactsTrait;
@@ -35,7 +37,7 @@ class MonitoringController extends FormController
 
         //set limits
         $limit = $session->get('mautic.social.monitoring.limit', $this->container->getParameter('mautic.default_pagelimit'));
-        $start = (1 === $page) ? 0 : (($page - 1) * $limit);
+        $start = ($page === 1) ? 0 : (($page - 1) * $limit);
         if ($start < 0) {
             $start = 0;
         }
@@ -61,7 +63,7 @@ class MonitoringController extends FormController
         $count = count($monitoringList);
         if ($count && $count < ($start + 1)) {
             //the number of entities are now less then the current asset so redirect to the last asset
-            if (1 === $count) {
+            if ($count === 1) {
                 $lastPage = 1;
             } else {
                 $lastPage = (floor($limit / $count)) ?: 1;
@@ -114,7 +116,7 @@ class MonitoringController extends FormController
      */
     public function newAction()
     {
-        if (!$this->container->get('mautic.security')->isGranted('mauticSocial:monitoring:create')) {
+        if (!$this->container->get('mautic.security')->isGranted('plugin:mauticSocial:monitoring:create')) {
             return $this->accessDenied();
         }
 
@@ -132,8 +134,7 @@ class MonitoringController extends FormController
 
         // get the network type from the request on submit. helpful for validation error
         // rebuilds structure of the form when it gets updated on submit
-        $monitoring  = $this->request->request->get('monitoring', []);
-        $networkType = 'POST' === $method ? ($monitoring['networkType'] ?? '') : '';
+        $networkType = ($this->request->getMethod() == 'POST') ? $this->request->request->get('monitoring[networkType]', '', true) : '';
 
         // build the form
         $form = $model->createForm(
@@ -150,10 +151,11 @@ class MonitoringController extends FormController
         // Set the page we came from
         $page = $session->get('mautic.social.monitoring.page', 1);
         ///Check for a submitted form and process it
-        if ('POST' == $method) {
+        if ($method == 'POST') {
             $viewParameters = ['page' => $page];
             $template       = 'MauticSocialBundle:Monitoring:index';
-            $valid          = false;
+
+            $valid = false;
             if (!$cancelled = $this->isFormCancelled($form)) {
                 if ($valid = $this->isFormValid($form)) {
                     //form is valid so process the data
@@ -179,7 +181,7 @@ class MonitoringController extends FormController
 
                     if (!$form->get('buttons')->get('save')->isClicked()) {
                         //return edit view so that all the session stuff is loaded
-                        return $this->editAction($entity->getId());
+                        return $this->editAction($entity->getId(), true);
                     }
 
                     $viewParameters = [
@@ -236,7 +238,7 @@ class MonitoringController extends FormController
      */
     public function editAction($objectId)
     {
-        if (!$this->container->get('mautic.security')->isGranted('mauticSocial:monitoring:edit')) {
+        if (!$this->container->get('mautic.security')->isGranted('plugin:mauticSocial:monitoring:edit')) {
             return $this->accessDenied();
         }
 
@@ -265,7 +267,7 @@ class MonitoringController extends FormController
         ];
 
         //not found
-        if (null === $entity) {
+        if ($entity === null) {
             return $this->postActionRedirect(
                 array_merge(
                     $postActionVars,
@@ -287,9 +289,8 @@ class MonitoringController extends FormController
 
         // get the network type from the request on submit. helpful for validation error
         // rebuilds structure of the form when it gets updated on submit
-        $method      = $this->request->getMethod();
-        $monitoring  = $this->request->request->get('monitoring', []);
-        $networkType = 'POST' === $method ? ($monitoring['networkType'] ?? '') : $entity->getNetworkType();
+        $networkType = ($this->request->getMethod() == 'POST') ? $this->request->request->get('monitoring[networkType]', '', true)
+            : $entity->getNetworkType();
 
         // build the form
         $form = $model->createForm(
@@ -304,9 +305,8 @@ class MonitoringController extends FormController
         );
 
         ///Check for a submitted form and process it
-        if ('POST' === $method) {
+        if ($this->request->getMethod() == 'POST') {
             $valid = false;
-
             if (!$cancelled = $this->isFormCancelled($form)) {
                 if ($valid = $this->isFormValid($form)) {
                     //form is valid so process the data
@@ -389,7 +389,7 @@ class MonitoringController extends FormController
      */
     public function viewAction($objectId)
     {
-        if (!$this->get('mautic.security')->isGranted('mauticSocial:monitoring:view')) {
+        if (!$this->get('mautic.security')->isGranted('plugin:mauticSocial:monitoring:view')) {
             return $this->accessDenied();
         }
 
@@ -409,7 +409,7 @@ class MonitoringController extends FormController
 
         $tmpl = $this->request->isXmlHttpRequest() ? $this->request->get('tmpl', 'details') : 'details';
 
-        if (null === $monitoringEntity) {
+        if ($monitoringEntity === null) {
             //set the return URL
             $returnUrl = $this->generateUrl('mautic_social_index', ['page' => $page]);
 
@@ -446,7 +446,7 @@ class MonitoringController extends FormController
 
         // Init the date range filter form
         $dateRangeValues = $this->request->get('daterange', []);
-        $dateRangeForm   = $this->get('form.factory')->create(DateRangeType::class, $dateRangeValues, ['action' => $returnUrl]);
+        $dateRangeForm   = $this->get('form.factory')->create('daterange', $dateRangeValues, ['action' => $returnUrl]);
         $dateFrom        = new \DateTime($dateRangeForm['date_from']->getData());
         $dateTo          = new \DateTime($dateRangeForm['date_to']->getData());
 
@@ -496,7 +496,7 @@ class MonitoringController extends FormController
      */
     public function deleteAction($objectId)
     {
-        if (!$this->get('mautic.security')->isGranted('mauticSocial:monitoring:delete')) {
+        if (!$this->get('mautic.security')->isGranted('plugin:mauticSocial:monitoring:delete')) {
             return $this->accessDenied();
         }
 
@@ -515,12 +515,12 @@ class MonitoringController extends FormController
             ],
         ];
 
-        if ('POST' == $this->request->getMethod()) {
+        if ($this->request->getMethod() == 'POST') {
             /** @var \MauticPlugin\MauticSocialBundle\Model\MonitoringModel $model */
             $model  = $this->getModel('social.monitoring');
             $entity = $model->getEntity($objectId);
 
-            if (null === $entity) {
+            if ($entity === null) {
                 $flashes[] = [
                     'type'    => 'error',
                     'msg'     => 'mautic.social.monitoring.error.notfound',
@@ -563,7 +563,7 @@ class MonitoringController extends FormController
      */
     public function batchDeleteAction()
     {
-        if (!$this->container->get('mautic.security')->isGranted('mauticSocial:monitoring:delete')) {
+        if (!$this->container->get('mautic.security')->isGranted('plugin:mauticSocial:monitoring:delete')) {
             return $this->accessDenied();
         }
 
@@ -582,7 +582,7 @@ class MonitoringController extends FormController
             ],
         ];
 
-        if ('POST' == $this->request->getMethod()) {
+        if ($this->request->getMethod() == 'POST') {
             /** @var \MauticPlugin\MauticSocialBundle\Model\MonitoringModel $model */
             $model = $this->getModel('social.monitoring');
 
@@ -593,7 +593,7 @@ class MonitoringController extends FormController
             foreach ($ids as $objectId) {
                 $entity = $model->getEntity($objectId);
 
-                if (null === $entity) {
+                if ($entity === null) {
                     $flashes[] = [
                         'type'    => 'error',
                         'msg'     => 'mautic.social.monitoring.error.notfound',
@@ -641,7 +641,7 @@ class MonitoringController extends FormController
         return $this->generateContactsGrid(
             $objectId,
             $page,
-            'mauticSocial:monitoring:view',
+            'plugin:mauticSocial:monitoring:view',
             'social',
             'monitoring_leads',
             null, // @todo - implement when individual social channels are supported by the plugin

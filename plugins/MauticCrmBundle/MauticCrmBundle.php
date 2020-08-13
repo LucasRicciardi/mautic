@@ -23,11 +23,11 @@ class MauticCrmBundle extends PluginBundleBase
 {
     public static function onPluginInstall(Plugin $plugin, MauticFactory $factory, $metadata = null, $installedSchema = null)
     {
-        if (null === $metadata) {
+        if ($metadata === null) {
             $metadata = self::getMetadata($factory->getEntityManager());
         }
 
-        if (null !== $metadata) {
+        if ($metadata !== null) {
             parent::onPluginInstall($plugin, $factory, $metadata, $installedSchema);
         }
     }
@@ -35,6 +35,8 @@ class MauticCrmBundle extends PluginBundleBase
     /**
      * Fix: plugin installer doesn't find metadata entities for the plugin
      * PluginBundle/Controller/PluginController:410.
+     *
+     * @param EntityManager $em
      *
      * @return array|null
      */
@@ -47,7 +49,7 @@ class MauticCrmBundle extends PluginBundleBase
 
         /** @var \Doctrine\ORM\Mapping\ClassMetadata $meta */
         foreach ($allMetadata as $meta) {
-            if (false === strpos($meta->namespace, 'MauticPlugin\\MauticCrmBundle')) {
+            if (strpos($meta->namespace, 'MauticPlugin\\MauticCrmBundle') === false) {
                 continue;
             }
 

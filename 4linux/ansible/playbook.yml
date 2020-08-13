@@ -1,0 +1,6 @@
+- name: Deploy Mautic
+  hosts: localhost
+  become: yes
+  roles:
+    - build_image
+    - install_plugins

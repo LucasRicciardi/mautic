@@ -13,10 +13,12 @@ namespace MauticPlugin\MauticCloudStorageBundle\EventListener;
 
 use Mautic\AssetBundle\AssetEvents;
 use Mautic\AssetBundle\Event as Events;
-use MauticPlugin\MauticCloudStorageBundle\Integration\CloudStorageIntegration;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 
-class RemoteAssetBrowseSubscriber implements EventSubscriberInterface
+/**
+ * Class RemoteAssetBrowseSubscriber.
+ */
+class RemoteAssetBrowseSubscriber extends CommonSubscriber
 {
     /**
      * @return array
@@ -30,10 +32,12 @@ class RemoteAssetBrowseSubscriber implements EventSubscriberInterface
 
     /**
      * Fetches the connector for an event's integration.
+     *
+     * @param Events\RemoteAssetBrowseEvent $event
      */
     public function onAssetRemoteBrowse(Events\RemoteAssetBrowseEvent $event)
     {
-        /** @var CloudStorageIntegration $integration */
+        /** @var \MauticPlugin\MauticCloudStorageBundle\Integration\CloudStorageIntegration $integration */
         $integration = $event->getIntegration();
 
         $event->setAdapter($integration->getAdapter());

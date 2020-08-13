@@ -13,7 +13,6 @@ namespace MauticPlugin\MauticFocusBundle\Controller;
 
 use Mautic\CoreBundle\Controller\CommonController;
 use Mautic\CoreBundle\Helper\TrackingPixelHelper;
-use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\MauticFocusBundle\Entity\Stat;
 use MauticPlugin\MauticFocusBundle\Event\FocusViewEvent;
 use MauticPlugin\MauticFocusBundle\FocusEvents;
@@ -44,8 +43,9 @@ class PublicController extends CommonController
             }
 
             $content  = $model->generateJavascript($focus, false, (MAUTIC_ENV == 'dev'));
+            $response = new Response($content, 200, ['Content-Type' => 'application/javascript']);
 
-            return new Response($content, 200, ['Content-Type' => 'application/javascript']);
+            return $response;
         } else {
             return new Response('', 200, ['Content-Type' => 'application/javascript']);
         }
@@ -61,10 +61,7 @@ class PublicController extends CommonController
             /** @var \MauticPlugin\MauticFocusBundle\Model\FocusModel $model */
             $model = $this->getModel('focus');
             $focus = $model->getEntity($id);
-
-            /** @var ContactTracker $contactTracker */
-            $contactTracker = $this->get('mautic.tracker.contact');
-            $lead           = $contactTracker->getContact();
+            $lead  = $this->getModel('lead')->getCurrentLead();
 
             if ($focus && $focus->isPublished() && $lead) {
                 $stat = $model->addStat($focus, Stat::TYPE_NOTIFICATION, $this->request, $lead);
@@ -76,6 +73,8 @@ class PublicController extends CommonController
             }
         }
 
-        return TrackingPixelHelper::getResponse($this->request);
+        $response = TrackingPixelHelper::getResponse($this->request);
+
+        return $response;
     }
 }

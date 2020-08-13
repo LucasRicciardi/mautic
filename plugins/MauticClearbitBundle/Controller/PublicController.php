@@ -85,6 +85,7 @@ class PublicController extends FormController
 
                 foreach ([
                              'facebook' => 'http://www.facebook.com/',
+                             'googleplus' => 'http://plus.google.com/',
                              'linkedin' => 'http://www.linkedin.com/',
                              'twitter' => 'http://www.twitter.com/',
                          ] as $p => $u) {
@@ -235,6 +236,10 @@ class PublicController extends FormController
 
                     if (array_key_exists('country', $loc) && empty($currFields['companycountry']['value'])) {
                         $data['companycountry'] = $loc['country'];
+                    }
+
+                    if (array_key_exists('postalCode', $loc) && empty($currFields['companyzipcode']['value'])) {
+                        $loc['postalCode'];
                     }
 
                     if (array_key_exists('state', $loc) && empty($currFields['companystate']['value'])) {

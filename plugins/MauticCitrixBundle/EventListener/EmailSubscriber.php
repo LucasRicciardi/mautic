@@ -11,7 +11,7 @@
 
 namespace MauticPlugin\MauticCitrixBundle\EventListener;
 
-use Mautic\CoreBundle\Helper\TemplatingHelper;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\EmailBundle\EmailEvents;
 use Mautic\EmailBundle\Event\EmailBuilderEvent;
 use Mautic\EmailBundle\Event\EmailSendEvent;
@@ -21,42 +21,25 @@ use MauticPlugin\MauticCitrixBundle\Event\TokenGenerateEvent;
 use MauticPlugin\MauticCitrixBundle\Helper\CitrixHelper;
 use MauticPlugin\MauticCitrixBundle\Helper\CitrixProducts;
 use MauticPlugin\MauticCitrixBundle\Model\CitrixModel;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 
-class EmailSubscriber implements EventSubscriberInterface
+/**
+ * Class EmailSubscriber.
+ */
+class EmailSubscriber extends CommonSubscriber
 {
     /**
      * @var CitrixModel
      */
-    private $citrixModel;
+    protected $citrixModel;
 
     /**
-     * @var TranslatorInterface
+     * FormSubscriber constructor.
+     *
+     * @param CitrixModel $citrixModel
      */
-    private $translator;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    private $dispatcher;
-
-    /**
-     * @var TemplatingHelper
-     */
-    private $templating;
-
-    public function __construct(
-        CitrixModel $citrixModel,
-        TranslatorInterface $translator,
-        EventDispatcherInterface $dispatcher,
-        TemplatingHelper $templating
-    ) {
+    public function __construct(CitrixModel $citrixModel)
+    {
         $this->citrixModel = $citrixModel;
-        $this->translator  = $translator;
-        $this->dispatcher  = $dispatcher;
-        $this->templating  = $templating;
     }
 
     /**
@@ -73,6 +56,8 @@ class EmailSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * @param TokenGenerateEvent $event
+     *
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
@@ -104,6 +89,8 @@ class EmailSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * @param EmailBuilderEvent $event
+     *
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
@@ -136,6 +123,8 @@ class EmailSubscriber implements EventSubscriberInterface
     /**
      * Search and replace tokens with content.
      *
+     * @param EmailSendEvent $event
+     *
      * @throws \RuntimeException
      */
     public function decodeTokensDisplay(EmailSendEvent $event)
@@ -145,6 +134,8 @@ class EmailSubscriber implements EventSubscriberInterface
 
     /**
      * Search and replace tokens with content.
+     *
+     * @param EmailSendEvent $event
      *
      * @throws \RuntimeException
      */
@@ -156,7 +147,8 @@ class EmailSubscriber implements EventSubscriberInterface
     /**
      * Search and replace tokens with content.
      *
-     * @param bool $triggerEvent
+     * @param EmailSendEvent $event
+     * @param bool           $triggerEvent
      *
      * @throws \RuntimeException
      */
@@ -192,7 +184,7 @@ class EmailSubscriber implements EventSubscriberInterface
                     unset($tokenEvent);
                 }
 
-                $button = $this->templating->getTemplating()->render(
+                $button = $this->templating->render(
                     'MauticCitrixBundle:SubscribedEvents\EmailToken:token.html.php',
                     $params
                 );

@@ -11,25 +11,33 @@
 
 namespace MauticPlugin\MauticCrmBundle\EventListener;
 
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\LeadBundle\Event as Events;
 use Mautic\LeadBundle\LeadEvents;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticCrmBundle\Integration\Pipedrive\Export\LeadExport;
 use MauticPlugin\MauticCrmBundle\Integration\PipedriveIntegration;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class LeadSubscriber implements EventSubscriberInterface
+/**
+ * Class LeadSubscriber.
+ */
+class LeadSubscriber extends CommonSubscriber
 {
     /**
      * @var IntegrationHelper
      */
-    private $integrationHelper;
+    protected $integrationHelper;
 
     /**
      * @var LeadExport
      */
-    private $leadExport;
+    protected $leadExport;
 
+    /**
+     * CampaignSubscriber constructor.
+     *
+     * @param IntegrationHelper $integrationHelper
+     */
     public function __construct(IntegrationHelper $integrationHelper, LeadExport $leadExport = null)
     {
         $this->integrationHelper = $integrationHelper;
@@ -48,6 +56,9 @@ class LeadSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Events\LeadEvent $event
+     */
     public function onLeadPostSave(Events\LeadEvent $event)
     {
         $lead = $event->getLead();
@@ -74,6 +85,9 @@ class LeadSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @param Events\LeadEvent $event
+     */
     public function onLeadPostDelete(Events\LeadEvent $event)
     {
         $lead = $event->getLead();
@@ -91,6 +105,9 @@ class LeadSubscriber implements EventSubscriberInterface
         $this->leadExport->delete($lead);
     }
 
+    /**
+     * @param Events\LeadChangeCompanyEvent $event
+     */
     public function onLeadCompanyChange(Events\LeadChangeCompanyEvent $event)
     {
         $lead = $event->getLead();

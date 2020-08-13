@@ -50,6 +50,8 @@ abstract class AbstractImport extends AbstractPipedrive
     }
 
     /**
+     * @param array $data
+     *
      * @return bool
      */
     abstract protected function create(array $data = []);

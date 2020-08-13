@@ -13,43 +13,79 @@ namespace MauticPlugin\MauticFocusBundle\Controller;
 
 use Mautic\CoreBundle\Controller\AjaxController as CommonAjaxController;
 use Mautic\CoreBundle\Helper\InputHelper;
-use MauticPlugin\MauticFocusBundle\Helper\IframeAvailabilityChecker;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 class AjaxController extends CommonAjaxController
 {
     /**
-     * This method produces HTTP request checking headers which are blocking availability for iframe inheritance for other pages.
+     * @param Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
-    protected function checkIframeAvailabilityAction(Request $request): JsonResponse
+    protected function getWebsiteSnapshotAction(Request $request)
     {
-        $url = $request->request->get('website');
+        $data = ['success' => 0];
 
-        /** @var IframeAvailabilityChecker $availabilityChecker */
-        $availabilityChecker = $this->get('mautic.focus.helper.iframe_availability_checker');
+        if ($this->get('mautic.security')->isGranted('plugin:focus:items:create')) {
+            $website = InputHelper::url($request->request->get('website'));
 
-        return $availabilityChecker->check($url, $request->getScheme());
+            if ($website) {
+                // Let's try to extract colors from image
+                $id = InputHelper::int($request->request->get('id'));
+                if (!empty($id)) {
+                    // Tell the JS to not populate with default colors
+                    $data['ignoreDefaultColors'] = true;
+                }
+
+                $snapshotUrl = $this->get('mautic.helper.core_parameters')->getParameter('website_snapshot_url');
+                $snapshotKey = $this->get('mautic.helper.core_parameters')->getParameter('website_snapshot_key');
+
+                $http     = $this->get('mautic.http.connector');
+                $response = $http->get($snapshotUrl.'?url='.urlencode($website).'&key='.$snapshotKey, [], 30);
+
+                if ($response->code === 200) {
+                    $package = json_decode($response->body, true);
+                    if (isset($package['images'])) {
+                        $data['image']['desktop'] = $package['images']['desktop'];
+                        $data['image']['mobile']  = $package['images']['mobile'];
+                        $palette                  = $package['palette'];
+                        $data['colors']           = [
+                            'primaryColor'    => $palette[0],
+                            'textColor'       => FocusModel::isLightColor($palette[0]) ? '#000000' : '#ffffff',
+                            'buttonColor'     => $palette[1],
+                            'buttonTextColor' => FocusModel::isLightColor($palette[1]) ? '#000000' : '#ffffff',
+                        ];
+                        $data['success'] = 1;
+                    }
+                }
+            }
+        }
+
+        return $this->sendJsonResponse($data);
     }
 
-    protected function generatePreviewAction(Request $request): JsonResponse
+    /**
+     * @param Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    protected function generatePreviewAction(Request $request)
     {
-        $responseContent  = ['html' => '', 'style' => ''];
-        $focus            = $request->request->all();
+        $data  = ['html' => '', 'style' => ''];
+        $focus = $request->request->all();
 
         if (isset($focus['focus'])) {
             $focusArray = InputHelper::_($focus['focus']);
 
             if (!empty($focusArray['style']) && !empty($focusArray['type'])) {
-                /** @var FocusModel $model */
-                $model                    = $this->getModel('focus');
-                $focusArray['id']         = 'preview';
-                $responseContent['html']  = $model->getContent($focusArray, true);
-                $responseContent['style'] = $focusArray['style']; // Required by JS in response
+                /** @var \MauticPlugin\MauticFocusBundle\Model\FocusModel $model */
+                $model            = $this->getModel('focus');
+                $focusArray['id'] = 'preview';
+                $data['html']     = $model->getContent($focusArray, true);
             }
         }
 
-        return $this->sendJsonResponse($responseContent);
+        return $this->sendJsonResponse($data);
     }
 }

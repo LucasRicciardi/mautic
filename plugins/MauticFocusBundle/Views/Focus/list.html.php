@@ -8,7 +8,7 @@
  *
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-if ('index' == $tmpl) {
+if ($tmpl == 'index') {
     $view->extend('MauticFocusBundle:Focus:index.html.php');
 }
 ?>
@@ -26,7 +26,7 @@ if ('index' == $tmpl) {
                         'target'          => '#focusTable',
                         'routeBase'       => 'focus',
                         'templateButtons' => [
-                            'delete' => $permissions['focus:items:delete'],
+                            'delete' => $permissions['plugin:focus:items:delete'],
                         ],
                     ]
                 );
@@ -95,14 +95,14 @@ if ('index' == $tmpl) {
                                 'item'            => $item,
                                 'templateButtons' => [
                                     'edit' => $view['security']->hasEntityAccess(
-                                        $permissions['focus:items:editown'],
-                                        $permissions['focus:items:editother'],
+                                        $permissions['plugin:focus:items:editown'],
+                                        $permissions['plugin:focus:items:editother'],
                                         $item->getCreatedBy()
                                     ),
-                                    'clone'  => $permissions['focus:items:create'],
+                                    'clone'  => $permissions['plugin:focus:items:create'],
                                     'delete' => $view['security']->hasEntityAccess(
-                                        $permissions['focus:items:deleteown'],
-                                        $permissions['focus:items:deleteother'],
+                                        $permissions['plugin:focus:items:deleteown'],
+                                        $permissions['plugin:focus:items:deleteother'],
                                         $item->getCreatedBy()
                                     ),
                                 ],

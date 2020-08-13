@@ -73,6 +73,9 @@ class CitrixEvent
         $this->eventType = 'undefined';
     }
 
+    /**
+     * @param ORM\ClassMetadata $metadata
+     */
     public static function loadMetadata(ORM\ClassMetadata $metadata)
     {
         $builder = new ClassMetadataBuilder($metadata);
@@ -226,6 +229,8 @@ class CitrixEvent
     }
 
     /**
+     * @param \DateTime $eventDate
+     *
      * @return $this
      */
     public function setEventDate(\DateTime $eventDate)
@@ -276,6 +281,8 @@ class CitrixEvent
     }
 
     /**
+     * @param Lead $lead
+     *
      * @return CitrixEvent
      */
     public function setLead(Lead $lead)

@@ -21,20 +21,23 @@ class MauticSocialMonitoringCommand extends ContainerAwareCommand
 {
     protected $batchSize;
 
+    /**
+     * @var \MauticPlugin\MauticSocialBundle\Entity\MonitoringRepository;
+     */
     protected $monitorRepo;
 
     /**
-     * @var int|null
+     * @var
      */
     protected $maxPerIterations;
 
     /**
-     * @var OutputInterface
+     * @var
      */
     protected $output;
 
     /**
-     * @var InputInterface
+     * @var
      */
     protected $input;
 
@@ -55,6 +58,10 @@ class MauticSocialMonitoringCommand extends ContainerAwareCommand
             ->addOption('query-count', null, InputOption::VALUE_OPTIONAL, 'The number of records to search for per iteration. Default is 100.', 100);
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->input  = $input;
@@ -108,7 +115,7 @@ class MauticSocialMonitoringCommand extends ContainerAwareCommand
             'limit' => 100,
         ];
 
-        if (null !== $id) {
+        if ($id !== null) {
             $filter['filter'] = [
                 'force' => [
                     [
@@ -120,7 +127,9 @@ class MauticSocialMonitoringCommand extends ContainerAwareCommand
             ];
         }
 
-        return $this->monitorRepo->getPublishedEntities($filter);
+        $monitorList = $this->monitorRepo->getPublishedEntities($filter);
+
+        return $monitorList;
     }
 
     /**
@@ -138,16 +147,16 @@ class MauticSocialMonitoringCommand extends ContainerAwareCommand
         $commandName = '';
 
         // hashtag command
-        if ('twitter_hashtag' == $networkType) {
+        if ($networkType == 'twitter_hashtag') {
             $commandName = 'social:monitor:twitter:hashtags';
         }
 
         // mention command
-        if ('twitter_handle' == $networkType) {
+        if ($networkType == 'twitter_handle') {
             $commandName = 'social:monitor:twitter:mentions';
         }
 
-        if ('' == $commandName) {
+        if ($commandName == '') {
             $this->output->writeln('Matching command not found.');
 
             return 1;

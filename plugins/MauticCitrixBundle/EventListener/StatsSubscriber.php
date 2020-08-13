@@ -13,17 +13,28 @@ namespace MauticPlugin\MauticCitrixBundle\EventListener;
 
 use Doctrine\ORM\EntityManager;
 use Mautic\CoreBundle\EventListener\CommonStatsSubscriber;
-use Mautic\CoreBundle\Security\Permissions\CorePermissions;
-use MauticPlugin\MauticCitrixBundle\Entity\CitrixEvent;
 
+/**
+ * Class StatsSubscriber.
+ */
 class StatsSubscriber extends CommonStatsSubscriber
 {
-    public function __construct(CorePermissions $security, EntityManager $entityManager)
+    /**
+     * @var EntityManager
+     */
+    protected $em;
+
+    /**
+     * StatsSubscriber constructor.
+     *
+     * @param EntityManager $em
+     */
+    public function __construct(EntityManager $em)
     {
-        parent::__construct($security, $entityManager);
         $this->addContactRestrictedRepositories(
+            $em,
             [
-                CitrixEvent::class,
+                'MauticCitrixBundle:CitrixEvent',
             ]
         );
     }

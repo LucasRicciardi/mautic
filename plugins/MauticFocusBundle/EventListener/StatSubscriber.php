@@ -11,31 +11,32 @@
 
 namespace MauticPlugin\MauticFocusBundle\EventListener;
 
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\FormBundle\Event\SubmissionEvent;
 use Mautic\FormBundle\FormEvents;
 use Mautic\PageBundle\Event\PageHitEvent;
 use Mautic\PageBundle\PageEvents;
 use MauticPlugin\MauticFocusBundle\Entity\Stat;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 
-class StatSubscriber implements EventSubscriberInterface
+/**
+ * Class StatSubscriber.
+ */
+class StatSubscriber extends CommonSubscriber
 {
     /**
      * @var FocusModel
      */
-    private $model;
+    protected $model;
 
     /**
-     * @var RequestStack
+     * FormSubscriber constructor.
+     *
+     * @param FocusModel $model
      */
-    private $requestStack;
-
-    public function __construct(FocusModel $model, RequestStack $requestStack)
+    public function __construct(FocusModel $model)
     {
-        $this->model        = $model;
-        $this->requestStack = $requestStack;
+        $this->model = $model;
     }
 
     /**
@@ -49,12 +50,15 @@ class StatSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param PageHitEvent $event
+     */
     public function onPageHit(PageHitEvent $event)
     {
         $hit    = $event->getHit();
         $source = $hit->getSource();
 
-        if ('focus' == $source || 'focus.focus' == $source) {
+        if ($source == 'focus' || $source == 'focus.focus') {
             $sourceId = $hit->getSourceId();
             $focus    = $this->model->getEntity($sourceId);
 
@@ -66,12 +70,13 @@ class StatSubscriber implements EventSubscriberInterface
 
     /**
      * Note if this submission is from a focus submit.
+     *
+     * @param SubmissionEvent $event
      */
     public function onFormSubmit(SubmissionEvent $event)
     {
         // Check the request for a focus field
-        $mauticform = $this->requestStack->getCurrentRequest()->request->get('mauticform', []);
-        $id         = $mauticform['focusId'] ?? false;
+        $id = $this->request->request->get('mauticform[focusId]', false, true);
 
         if (!empty($id)) {
             $focus = $this->model->getEntity($id);

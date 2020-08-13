@@ -11,49 +11,41 @@
 
 namespace MauticPlugin\MauticFocusBundle\EventListener;
 
-use Mautic\CoreBundle\Helper\BuilderTokenHelperFactory;
-use Mautic\CoreBundle\Security\Permissions\CorePermissions;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
+use Mautic\CoreBundle\Helper\BuilderTokenHelper;
 use Mautic\PageBundle\Event\PageBuilderEvent;
 use Mautic\PageBundle\Event\PageDisplayEvent;
 use Mautic\PageBundle\PageEvents;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-class PageSubscriber implements EventSubscriberInterface
+/**
+ * Class PageSubscriber.
+ */
+class PageSubscriber extends CommonSubscriber
 {
     private $regex = '{focus=(.*?)}';
 
     /**
      * @var FocusModel
      */
-    private $model;
+    protected $model;
 
     /**
      * @var RouterInterface
      */
-    private $router;
+    protected $router;
 
     /**
-     * @var CorePermissions
+     * PageSubscriber constructor.
+     *
+     * @param FocusModel      $model
+     * @param RouterInterface $router
      */
-    private $security;
-
-    /**
-     * @var BuilderTokenHelperFactory
-     */
-    private $builderTokenHelperFactory;
-
-    public function __construct(
-        CorePermissions $security,
-        FocusModel $model,
-        RouterInterface $router,
-        BuilderTokenHelperFactory $builderTokenHelperFactory
-    ) {
-        $this->security                  = $security;
-        $this->router                    = $router;
-        $this->model                     = $model;
-        $this->builderTokenHelperFactory = $builderTokenHelperFactory;
+    public function __construct(FocusModel $model, RouterInterface $router)
+    {
+        $this->router = $router;
+        $this->model  = $model;
     }
 
     /**
@@ -69,15 +61,20 @@ class PageSubscriber implements EventSubscriberInterface
 
     /**
      * Add forms to available page tokens.
+     *
+     * @param PageBuilderEvent $event
      */
     public function onPageBuild(PageBuilderEvent $event)
     {
         if ($event->tokensRequested($this->regex)) {
-            $tokenHelper = $this->builderTokenHelperFactory->getBuilderTokenHelper('focus', $this->model->getPermissionBase(), 'MauticFocusBundle', 'mautic.focus');
-            $event->addTokensFromHelper($tokenHelper, $this->regex, 'name');
+            $tokenHelper = new BuilderTokenHelper($this->factory, 'focus', $this->model->getPermissionBase(), 'MauticFocusBundle', 'mautic.focus');
+            $event->addTokensFromHelper($tokenHelper, $this->regex, 'name', 'id', true);
         }
     }
 
+    /**
+     * @param PageDisplayEvent $event
+     */
     public function onPageDisplay(PageDisplayEvent $event)
     {
         $content = $event->getContent();
@@ -86,14 +83,14 @@ class PageSubscriber implements EventSubscriberInterface
         preg_match_all($regex, $content, $matches);
 
         if (count($matches[0])) {
-            foreach ($matches[1] as $id) {
+            foreach ($matches[1] as $k => $id) {
                 $focus = $this->model->getEntity($id);
-                if (null !== $focus
+                if ($focus !== null
                     && (
                         $focus->isPublished()
                         || $this->security->hasEntityAccess(
-                            'focus:items:viewown',
-                            'focus:items:viewother',
+                            'plugin:focus:items:viewown',
+                            'plugin:focus:items:viewother',
                             $focus->getCreatedBy()
                         )
                     )

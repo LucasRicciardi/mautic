@@ -24,7 +24,7 @@ class PostCountModel extends AbstractCommonModel
      *
      * @param $id
      *
-     * @return object|null
+     * @return null|object
      */
     public function getEntity($id = null)
     {

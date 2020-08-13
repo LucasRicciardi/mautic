@@ -20,7 +20,7 @@ use MauticPlugin\MauticCitrixBundle\Api\GotowebinarApi;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Routing\Router;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class CitrixHelper
@@ -33,18 +33,16 @@ class CitrixHelper
     /**
      * @var IntegrationHelper
      */
-    private static $integrationHelper;
+    private static $integratonHelper;
 
     /**
-     * @var RouterInterface
+     * @param IntegrationHelper $helper
+     * @param LoggerInterface   $logger
      */
-    private static $router;
-
-    public static function init(IntegrationHelper $helper, LoggerInterface $logger, RouterInterface $router)
+    public static function init(IntegrationHelper $helper, LoggerInterface $logger)
     {
-        self::$logger            = $logger;
-        self::$integrationHelper = $helper;
-        self::$router            = $router;
+        self::$logger           = $logger;
+        self::$integratonHelper = $helper;
     }
 
     /**
@@ -250,7 +248,7 @@ class CitrixHelper
     private static function getIntegration($integration)
     {
         try {
-            return self::$integrationHelper->getIntegrationObject($integration);
+            return self::$integratonHelper->getIntegrationObject($integration);
         } catch (\Exception $e) {
             // do nothing
         }
@@ -386,7 +384,8 @@ class CitrixHelper
                 } else {
                     if (CitrixProducts::GOTOASSIST === $product) {
                         // TODO: use the sessioncallback to update attendance status
-                        $router = self::$router;
+                        /** @var Router $router */
+                        $router = self::getContainer()->get('router');
                         $params = [
                             'sessionStatusCallbackUrl' => $router
                                 ->generate(

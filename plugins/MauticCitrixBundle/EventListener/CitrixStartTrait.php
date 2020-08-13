@@ -24,6 +24,9 @@ trait CitrixStartTrait
      */
     protected $emailModel;
 
+    /**
+     * @param EmailModel $emailModel
+     */
     public function setEmailModel(EmailModel $emailModel)
     {
         $this->emailModel = $emailModel;
@@ -32,6 +35,7 @@ trait CitrixStartTrait
     /**
      * @param string $product
      * @param Lead   $lead
+     * @param array  $productsToStart
      * @param  $emailId
      * @param  $actionId
      *

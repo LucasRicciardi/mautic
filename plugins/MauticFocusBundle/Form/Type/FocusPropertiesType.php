@@ -11,24 +11,24 @@
 
 namespace MauticPlugin\MauticFocusBundle\Form\Type;
 
-use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 class FocusPropertiesType extends AbstractType
 {
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $choices = [];
-
         // Type specific
         switch ($options['focus_style']) {
             case 'bar':
                 $builder->add(
                     'allow_hide',
-                    YesNoButtonGroupType::class,
+                    'yesno_button_group',
                     [
                         'label' => 'mautic.focus.form.bar.allow_hide',
                         'data'  => (isset($options['data']['allow_hide'])) ? $options['data']['allow_hide'] : true,
@@ -40,7 +40,7 @@ class FocusPropertiesType extends AbstractType
 
                 $builder->add(
                     'push_page',
-                    YesNoButtonGroupType::class,
+                    'yesno_button_group',
                     [
                         'label' => 'mautic.focus.form.bar.push_page',
                         'attr'  => [
@@ -53,7 +53,7 @@ class FocusPropertiesType extends AbstractType
 
                 $builder->add(
                     'sticky',
-                    YesNoButtonGroupType::class,
+                    'yesno_button_group',
                     [
                         'label' => 'mautic.focus.form.bar.sticky',
                         'attr'  => [
@@ -66,11 +66,11 @@ class FocusPropertiesType extends AbstractType
 
                 $builder->add(
                     'size',
-                    ChoiceType::class,
+                    'choice',
                     [
-                        'choices'           => [
-                            'mautic.focus.form.bar.size.large'   => 'large',
-                            'mautic.focus.form.bar.size.regular' => 'regular',
+                        'choices' => [
+                            'large'   => 'mautic.focus.form.bar.size.large',
+                            'regular' => 'mautic.focus.form.bar.size.regular',
                         ],
                         'label'      => 'mautic.focus.form.bar.size',
                         'label_attr' => ['class' => 'control-label'],
@@ -79,28 +79,28 @@ class FocusPropertiesType extends AbstractType
                             'onchange' => 'Mautic.focusUpdatePreview()',
                         ],
                         'required'    => false,
-                        'placeholder' => false,
+                        'empty_value' => false,
                     ]
                 );
 
                 $choices = [
-                    'mautic.focus.form.placement.top'    => 'top',
-                    'mautic.focus.form.placement.bottom' => 'bottom',
+                    'top'    => 'mautic.focus.form.placement.top',
+                    'bottom' => 'mautic.focus.form.placement.bottom',
                 ];
                 break;
             case 'modal':
                 $choices = [
-                    'mautic.focus.form.placement.top'    => 'top',
-                    'mautic.focus.form.placement.middle' => 'middle',
-                    'mautic.focus.form.placement.bottom' => 'bottom',
+                    'top'    => 'mautic.focus.form.placement.top',
+                    'middle' => 'mautic.focus.form.placement.middle',
+                    'bottom' => 'mautic.focus.form.placement.bottom',
                 ];
                 break;
             case 'notification':
                 $choices = [
-                    'mautic.focus.form.placement.top_left'     => 'top_left',
-                    'mautic.focus.form.placement.top_right'    => 'top_right',
-                    'mautic.focus.form.placement.bottom_left'  => 'bottom_left',
-                    'mautic.focus.form.placement.bottom_right' => 'bottom_right',
+                    'top_left'     => 'mautic.focus.form.placement.top_left',
+                    'top_right'    => 'mautic.focus.form.placement.top_right',
+                    'bottom_left'  => 'mautic.focus.form.placement.bottom_left',
+                    'bottom_right' => 'mautic.focus.form.placement.bottom_right',
                 ];
                 break;
             case 'page':
@@ -110,23 +110,23 @@ class FocusPropertiesType extends AbstractType
         if (!empty($choices)) {
             $builder->add(
                 'placement',
-                ChoiceType::class,
+                'choice',
                 [
-                    'choices'           => $choices,
-                    'label'             => 'mautic.focus.form.placement',
-                    'label_attr'        => ['class' => 'control-label'],
-                    'attr'              => [
+                    'choices'    => $choices,
+                    'label'      => 'mautic.focus.form.placement',
+                    'label_attr' => ['class' => 'control-label'],
+                    'attr'       => [
                         'class'    => 'form-control',
                         'onchange' => 'Mautic.focusUpdatePreview()',
                     ],
                     'required'    => false,
-                    'placeholder' => false,
+                    'empty_value' => false,
                 ]
             );
         }
     }
 
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'focus_properties';
     }
@@ -134,7 +134,7 @@ class FocusPropertiesType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setRequired(['focus_style']);
 

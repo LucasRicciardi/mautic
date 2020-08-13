@@ -13,8 +13,10 @@ namespace MauticPlugin\MauticCloudStorageBundle\Integration;
 
 use Gaufrette\Adapter;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use MauticPlugin\MauticCloudStorageBundle\Exception\NoFormNeededException;
 
+/**
+ * Class CloudStorageIntegration.
+ */
 abstract class CloudStorageIntegration extends AbstractIntegration
 {
     /**
@@ -23,25 +25,19 @@ abstract class CloudStorageIntegration extends AbstractIntegration
     protected $adapter;
 
     /**
-     * {@inheritdoc}
+     * @param FormBuilder|Form $builder
      */
     public function appendToForm(&$builder, $data, $formArea)
     {
-        if ('features' !== $formArea) {
-            return;
-        }
-
-        try {
-            $builder->add(
-                'provider',
-                $this->getForm(),
-                [
+        if ($formArea == 'features') {
+            $name = strtolower($this->getName());
+            if ($this->factory->serviceExists('mautic.form.type.cloudstorage.'.$name)) {
+                $builder->add('provider', 'cloudstorage_'.$name, [
                     'label'    => 'mautic.integration.form.provider.settings',
                     'required' => false,
                     'data'     => (isset($data['provider'])) ? $data['provider'] : [],
-                ]
-            );
-        } catch (NoFormNeededException $e) {
+                ]);
+            }
         }
     }
 
@@ -59,15 +55,6 @@ abstract class CloudStorageIntegration extends AbstractIntegration
      * @return Adapter
      */
     abstract public function getAdapter();
-
-    /**
-     * Retrieves FQCN form type class name.
-     *
-     * @return string
-     *
-     * @throws NoFormNeededException
-     */
-    abstract public function getForm();
 
     /**
      * Retrieves the public URL for a given key.

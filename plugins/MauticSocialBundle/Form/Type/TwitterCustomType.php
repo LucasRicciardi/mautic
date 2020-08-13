@@ -11,7 +11,6 @@
 
 namespace MauticPlugin\MauticSocialBundle\Form\Type;
 
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 class TwitterCustomType extends TwitterAbstractType
@@ -21,7 +20,7 @@ class TwitterCustomType extends TwitterAbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('custom', TextType::class, [
+        $builder->add('custom', 'text', [
             'label'      => 'mautic.social.monitoring.twitter.custom',
             'label_attr' => ['class' => 'control-label'],
             'attr'       => [
@@ -35,7 +34,7 @@ class TwitterCustomType extends TwitterAbstractType
         parent::buildForm($builder, $options);
     }
 
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'twitter_custom';
     }

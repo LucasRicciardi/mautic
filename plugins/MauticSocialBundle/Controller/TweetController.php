@@ -82,7 +82,7 @@ class TweetController extends FormController
      */
     protected function getPermissionBase()
     {
-        return 'mauticSocial:tweets';
+        return 'plugin:mauticSocial:tweets';
     }
 
     /**
@@ -105,7 +105,7 @@ class TweetController extends FormController
      */
     public function getUpdateSelect()
     {
-        return ('POST' == $this->request->getMethod())
+        return ($this->request->getMethod() == 'POST')
             ? $this->request->request->get('twitter_tweet[updateSelect]', false, true)
             : $this->request->get('updateSelect', false);
     }
@@ -113,6 +113,7 @@ class TweetController extends FormController
     /**
      * Set custom form themes, etc.
      *
+     * @param Form   $form
      * @param string $action
      *
      * @return \Symfony\Component\Form\FormView
@@ -151,7 +152,7 @@ class TweetController extends FormController
      */
     protected function getTemplateName($file)
     {
-        if ('form.html.php' === $file && 1 == $this->request->get('modal')) {
+        if ($file === 'form.html.php' && $this->request->get('modal') == 1) {
             return parent::getTemplateName('form.modal.html.php');
         }
 

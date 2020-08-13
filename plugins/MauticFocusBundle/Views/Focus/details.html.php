@@ -22,17 +22,17 @@ $view['slots']->set(
             'item'            => $item,
             'templateButtons' => [
                 'edit' => $view['security']->hasEntityAccess(
-                    $permissions['focus:items:editown'],
-                    $permissions['focus:items:editother'],
+                    $permissions['plugin:focus:items:editown'],
+                    $permissions['plugin:focus:items:editother'],
                     $item->getCreatedBy()
                 ),
-                'clone'  => $permissions['focus:items:create'],
+                'clone'  => $permissions['plugin:focus:items:create'],
                 'delete' => $view['security']->hasEntityAccess(
-                    $permissions['focus:items:deleteown'],
-                    $permissions['focus:items:deleteother'],
+                    $permissions['plugin:focus:items:deleteown'],
+                    $permissions['plugin:focus:items:deleteother'],
                     $item->getCreatedBy()
                 ),
-                'close' => $view['security']->isGranted('focus:items:view'),
+                'close' => $view['security']->isGranted('plugin:focus:items:view'),
             ],
             'routeBase' => 'focus',
             'langVar'   => 'focus',

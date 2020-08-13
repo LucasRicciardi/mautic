@@ -41,7 +41,7 @@ class TweetListType extends AbstractType
                     ];
                 },
                 'ajax_lookup_action' => function (Options $options) {
-                    return 'mauticSocial:getLookupChoiceList';
+                    return 'plugin:mauticSocial:getLookupChoiceList';
                 },
                 'multiple' => true,
                 'required' => false,
@@ -52,7 +52,7 @@ class TweetListType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'tweet_list';
     }

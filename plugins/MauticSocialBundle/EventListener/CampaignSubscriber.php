@@ -14,38 +14,33 @@ namespace MauticPlugin\MauticSocialBundle\EventListener;
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
-use MauticPlugin\MauticSocialBundle\Form\Type\TweetSendType;
 use MauticPlugin\MauticSocialBundle\Helper\CampaignEventHelper;
 use MauticPlugin\MauticSocialBundle\SocialEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 
-class CampaignSubscriber implements EventSubscriberInterface
+class CampaignSubscriber extends CommonSubscriber
 {
     /**
      * @var CampaignEventHelper
      */
-    private $campaignEventHelper;
+    protected $campaignEventHelper;
 
     /**
      * @var IntegrationHelper
      */
-    private $integrationHelper;
+    protected $integrationHelper;
 
     /**
-     * @var TranslatorInterface
+     * CampaignSubscriber constructor.
+     *
+     * @param CampaignEventHelper $campaignEventHelper
+     * @param IntegrationHelper   $helper
      */
-    private $translator;
-
-    public function __construct(
-        CampaignEventHelper $campaignEventHelper,
-        IntegrationHelper $integrationHelper,
-        TranslatorInterface $translator
-    ) {
+    public function __construct(CampaignEventHelper $campaignEventHelper, IntegrationHelper $integrationHelper)
+    {
         $this->campaignEventHelper = $campaignEventHelper;
         $this->integrationHelper   = $integrationHelper;
-        $this->translator          = $translator;
     }
 
     /**
@@ -59,6 +54,9 @@ class CampaignSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param CampaignBuilderEvent $event
+     */
     public function onCampaignBuild(CampaignBuilderEvent $event)
     {
         $integration = $this->integrationHelper->getIntegrationObject('Twitter');
@@ -68,7 +66,7 @@ class CampaignSubscriber implements EventSubscriberInterface
                 'description'     => 'mautic.social.twitter.tweet.event.open_desc',
                 'eventName'       => SocialEvents::ON_CAMPAIGN_TRIGGER_ACTION,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_channelId'],
-                'formType'        => TweetSendType::class,
+                'formType'        => 'tweetsend_list',
                 'channel'         => 'social.tweet',
                 'channelIdField'  => 'channelId',
             ];
@@ -77,6 +75,9 @@ class CampaignSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @param CampaignExecutionEvent $event
+     */
     public function onCampaignAction(CampaignExecutionEvent $event)
     {
         $event->setChannel('social.twitter');

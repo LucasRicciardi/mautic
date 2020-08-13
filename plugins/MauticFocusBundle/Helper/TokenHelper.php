@@ -11,10 +11,12 @@
 
 namespace MauticPlugin\MauticFocusBundle\Helper;
 
-use Mautic\CoreBundle\Security\Permissions\CorePermissions;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
 use Symfony\Component\Routing\RouterInterface;
 
+/**
+ * Class TokenHelper.
+ */
 class TokenHelper
 {
     private $regex = '{focus=(.*?)}';
@@ -30,15 +32,14 @@ class TokenHelper
     protected $router;
 
     /**
-     * @var CorePermissions
+     * TokenHelper constructor.
+     *
+     * @param FormModel $model
      */
-    protected $security;
-
-    public function __construct(FocusModel $model, RouterInterface $router, CorePermissions $security)
+    public function __construct(FocusModel $model, RouterInterface $router)
     {
-        $this->router   = $router;
-        $this->model    = $model;
-        $this->security = $security;
+        $this->router = $router;
+        $this->model  = $model;
     }
 
     /**
@@ -55,15 +56,15 @@ class TokenHelper
         $tokens = [];
 
         if (count($matches[0])) {
-            foreach ($matches[1] as $id) {
+            foreach ($matches[1] as $k => $id) {
                 $token = '{focus='.$id.'}';
                 $focus = $this->model->getEntity($id);
-                if (null !== $focus
+                if ($focus !== null
                     && (
                         $focus->isPublished()
                         || $this->security->hasEntityAccess(
-                            'focus:items:viewown',
-                            'focus:items:viewother',
+                            'plugin:focus:items:viewown',
+                            'plugin:focus:items:viewother',
                             $focus->getCreatedBy()
                         )
                     )

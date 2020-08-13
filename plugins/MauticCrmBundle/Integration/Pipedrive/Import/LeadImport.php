@@ -23,6 +23,9 @@ class LeadImport extends AbstractImport
 
     /**
      * LeadImport constructor.
+     *
+     * @param EntityManager $em
+     * @param LeadModel     $leadModel
      */
     public function __construct(EntityManager $em, LeadModel $leadModel, CompanyModel $companyModel)
     {
@@ -33,6 +36,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
+     * @param array $data
+     *
      * @return bool
      *
      * @throws \Doctrine\ORM\ORMException
@@ -80,6 +85,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
+     * @param array $data
+     *
      * @return bool
      *
      * @throws \Doctrine\ORM\ORMException
@@ -138,6 +145,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
+     * @param array $data
+     *
      * @throws \Exception
      */
     public function delete(array $data = [])
@@ -166,7 +175,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
-     * @param $integrationOwnerId
+     * @param      $integrationOwnerId
+     * @param Lead $lead
      */
     private function addOwnerToLead($integrationOwnerId, Lead $lead)
     {
@@ -175,7 +185,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
-     * @param $companyName
+     * @param      $companyName
+     * @param Lead $lead
      *
      * @throws \Doctrine\ORM\ORMException
      */
@@ -191,7 +202,8 @@ class LeadImport extends AbstractImport
     }
 
     /**
-     * @param $integrationCompanyId
+     * @param      $integrationCompanyId
+     * @param Lead $lead
      *
      * @throws \Doctrine\ORM\ORMException
      */

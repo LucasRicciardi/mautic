@@ -19,13 +19,12 @@ use Mautic\CoreBundle\Helper\TemplatingHelper;
 use Mautic\CoreBundle\Model\FormModel;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Model\FieldModel;
-use Mautic\LeadBundle\Tracker\ContactTracker;
+use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\PageBundle\Model\TrackableModel;
 use MauticPlugin\MauticFocusBundle\Entity\Focus;
 use MauticPlugin\MauticFocusBundle\Entity\Stat;
 use MauticPlugin\MauticFocusBundle\Event\FocusEvent;
 use MauticPlugin\MauticFocusBundle\FocusEvents;
-use MauticPlugin\MauticFocusBundle\Form\Type\FocusType;
 use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -55,32 +54,33 @@ class FocusModel extends FormModel
     protected $templating;
 
     /**
+     * @var
+     */
+    protected $leadModel;
+
+    /**
      * @var FieldModel
      */
     protected $leadFieldModel;
 
     /**
-     * @var ContactTracker
-     */
-    protected $contactTracker;
-
-    /**
      * FocusModel constructor.
+     *
+     * @param \Mautic\FormBundle\Model\FormModel $formModel
+     * @param TrackableModel                     $trackableModel
+     * @param TemplatingHelper                   $templating
+     * @param EventDispatcherInterface           $dispatcher
+     * @param LeadModel                          $leadModel
+     * @param FieldModel                         $leadFieldModel
      */
-    public function __construct(
-        \Mautic\FormBundle\Model\FormModel $formModel,
-        TrackableModel $trackableModel,
-        TemplatingHelper $templating,
-        EventDispatcherInterface $dispatcher,
-        FieldModel $leadFieldModel,
-        ContactTracker $contactTracker
-    ) {
+    public function __construct(\Mautic\FormBundle\Model\FormModel $formModel, TrackableModel $trackableModel, TemplatingHelper $templating, EventDispatcherInterface $dispatcher, LeadModel $leadModel, FieldModel $leadFieldModel)
+    {
         $this->formModel      = $formModel;
         $this->trackableModel = $trackableModel;
         $this->templating     = $templating;
         $this->dispatcher     = $dispatcher;
+        $this->leadModel      = $leadModel;
         $this->leadFieldModel = $leadFieldModel;
-        $this->contactTracker = $contactTracker;
     }
 
     /**
@@ -96,7 +96,7 @@ class FocusModel extends FormModel
      */
     public function getPermissionBase()
     {
-        return 'focus:items';
+        return 'plugin:focus:items';
     }
 
     /**
@@ -119,7 +119,7 @@ class FocusModel extends FormModel
             $options['action'] = $action;
         }
 
-        return $formFactory->create(FocusType::class, $entity, $options);
+        return $formFactory->create('focus', $entity, $options);
     }
 
     /**
@@ -151,7 +151,7 @@ class FocusModel extends FormModel
      */
     public function getEntity($id = null)
     {
-        if (null === $id) {
+        if ($id === null) {
             return new Focus();
         }
 
@@ -176,6 +176,9 @@ class FocusModel extends FormModel
     }
 
     /**
+     * @param Focus $focus
+     * @param bool  $preview
+     *
      * @return string
      */
     public function generateJavascript(Focus $focus, $isPreview = false, $byPassCache = false)
@@ -186,7 +189,7 @@ class FocusModel extends FormModel
             $focusArray = $focus->toArray();
 
             $url = '';
-            if ('link' == $focusArray['type'] && !empty($focusArray['properties']['content']['link_url'])) {
+            if ($focusArray['type'] == 'link' && !empty($focusArray['properties']['content']['link_url'])) {
                 $trackable = $this->trackableModel->getTrackableByUrl(
                     $focusArray['properties']['content']['link_url'],
                     'focus',
@@ -224,7 +227,7 @@ class FocusModel extends FormModel
         }
 
         // Replace tokens to ensure clickthroughs, lead tokens etc are appropriate
-        $lead       = $this->contactTracker->getContact();
+        $lead       = $this->leadModel->getCurrentLead();
         $tokenEvent = new TokenReplacementEvent($cached['focus'], $lead, ['focus_id' => $focus->getId()]);
         $this->dispatcher->dispatch(FocusEvents::TOKEN_REPLACEMENT, $tokenEvent);
         $focusContent = $tokenEvent->getContent();
@@ -240,6 +243,7 @@ class FocusModel extends FormModel
     }
 
     /**
+     * @param array  $focus
      * @param bool   $isPreview
      * @param string $url
      *
@@ -318,9 +322,10 @@ class FocusModel extends FormModel
     /**
      * Add a stat entry.
      *
-     * @param      $type
-     * @param null $data
-     * @param null $lead
+     * @param Focus $focus
+     * @param       $type
+     * @param null  $data
+     * @param null  $lead
      *
      * @return Stat
      */
@@ -414,9 +419,12 @@ class FocusModel extends FormModel
     }
 
     /**
-     * @param      $unit
-     * @param null $dateFormat
-     * @param bool $canViewOthers
+     * @param Focus          $focus
+     * @param                $unit
+     * @param \DateTime|null $dateFrom
+     * @param \DateTime|null $dateTo
+     * @param null           $dateFormat
+     * @param bool           $canViewOthers
      *
      * @return array
      */
@@ -432,8 +440,8 @@ class FocusModel extends FormModel
         $data = $query->loadAndBuildTimeData($q);
         $chart->setDataset($this->translator->trans('mautic.focus.graph.views'), $data);
 
-        if ('notification' != $focus->getType()) {
-            if ('link' == $focus->getType()) {
+        if ($focus->getType() != 'notification') {
+            if ($focus->getType() == 'link') {
                 $q = $query->prepareTimeDataQuery('focus_stats', 'date_added', ['type' => Stat::TYPE_CLICK, 'focus_id' => $focus->getId()]);
                 if (!$canViewOthers) {
                     $this->limitQueryToCreator($q);
@@ -455,6 +463,8 @@ class FocusModel extends FormModel
 
     /**
      * Joins the email table and limits created_by to currently logged in user.
+     *
+     * @param QueryBuilder $q
      */
     public function limitQueryToCreator(QueryBuilder $q)
     {

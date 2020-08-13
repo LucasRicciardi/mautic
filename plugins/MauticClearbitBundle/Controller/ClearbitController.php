@@ -14,8 +14,6 @@ namespace MauticPlugin\MauticClearbitBundle\Controller;
 use Mautic\FormBundle\Controller\FormController;
 use Mautic\LeadBundle\Entity\Company;
 use Mautic\LeadBundle\Entity\Lead;
-use MauticPlugin\MauticClearbitBundle\Form\Type\BatchLookupType;
-use MauticPlugin\MauticClearbitBundle\Form\Type\LookupType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -70,7 +68,7 @@ class ClearbitController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            LookupType::class,
+                            'clearbit_lookup',
                             [
                                 'objectId' => $objectId,
                             ],
@@ -219,7 +217,7 @@ class ClearbitController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            BatchLookupType::class,
+                            'clearbit_batch_lookup',
                             [],
                             [
                                 'action' => $route,
@@ -325,7 +323,7 @@ class ClearbitController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            LookupType::class,
+                            'clearbit_lookup',
                             [
                                 'objectId' => $objectId,
                             ],
@@ -473,7 +471,7 @@ class ClearbitController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            BatchLookupType::class,
+                            'clearbit_batch_lookup',
                             [],
                             [
                                 'action' => $route,

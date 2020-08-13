@@ -11,8 +11,6 @@
 
 namespace MauticPlugin\MauticEmailMarketingBundle\Integration;
 
-use MauticPlugin\MauticEmailMarketingBundle\Form\Type\IcontactType;
-
 /**
  * Class IcontactIntegration.
  */
@@ -150,6 +148,19 @@ class IcontactIntegration extends EmailAbstractIntegration
     }
 
     /**
+     * Returns settings for the integration form.
+     *
+     * @return array
+     */
+    public function getFormSettings()
+    {
+        return [
+            'requires_callback'      => false,
+            'requires_authorization' => true,
+        ];
+    }
+
+    /**
      * @return array
      */
     public function getAvailableLeadFields($settings = [])
@@ -182,7 +193,7 @@ class IcontactIntegration extends EmailAbstractIntegration
                 $leadFields[$f] = [
                     'label'    => $this->translator->trans('mautic.icontact.field.'.$f),
                     'type'     => 'string',
-                    'required' => ('email' == $f) ? true : false,
+                    'required' => ($f == 'email') ? true : false,
                 ];
             }
 
@@ -226,7 +237,7 @@ class IcontactIntegration extends EmailAbstractIntegration
             if ($this->isAuthorized()) {
                 $customfields = [];
                 foreach ($mappedData as $k => &$v) {
-                    if (0 === strpos($k, 'cf_')) {
+                    if (strpos($k, 'cf_') === 0) {
                         $customfields[str_replace('cf_', '', $k)] = (string) $v;
                         unset($mappedData[$k]);
                     } else {
@@ -249,15 +260,5 @@ class IcontactIntegration extends EmailAbstractIntegration
         }
 
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @return string|null
-     */
-    public function getFormType()
-    {
-        return IcontactType::class;
     }
 }

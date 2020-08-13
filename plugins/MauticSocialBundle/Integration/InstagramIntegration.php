@@ -111,7 +111,7 @@ class InstagramIntegration extends SocialIntegration
                         break;
                     }
 
-                    if ('image' == $m->type) {
+                    if ($m->type == 'image') {
                         $socialCache['activity']['photos'][] = [
                             'url' => $m->images->standard_resolution->url,
                         ];
@@ -177,13 +177,5 @@ class InstagramIntegration extends SocialIntegration
         }
 
         return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFormType()
-    {
-        return null;
     }
 }

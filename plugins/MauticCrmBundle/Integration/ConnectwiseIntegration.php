@@ -1,5 +1,6 @@
 <?php
 
+
 /*
  * @copyright   2014 Mautic Contributors. All rights reserved
  * @author      Mautic
@@ -11,17 +12,16 @@
 
 namespace MauticPlugin\MauticCrmBundle\Integration;
 
-use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\PluginBundle\Entity\IntegrationEntity;
 use Mautic\PluginBundle\Entity\IntegrationEntityRepository;
 use Mautic\PluginBundle\Exception\ApiErrorException;
 use Mautic\PluginBundle\Integration\IntegrationObject;
-use MauticPlugin\MauticCrmBundle\Form\Type\IntegrationCampaignsTaskType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilder;
 
 /**
+ * Class ConnectwiseIntegration.
+ *
  * @method \MauticPlugin\MauticCrmBundle\Api\ConnectwiseApi getApiHelper
  */
 class ConnectwiseIntegration extends CrmAbstractIntegration
@@ -139,6 +139,17 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
     public function getAuthLoginUrl()
     {
         return $this->router->generate('mautic_integration_auth_callback', ['integration' => $this->getName()]);
+    }
+
+    /**
+     * @return array
+     */
+    public function getFormSettings()
+    {
+        return [
+            'requires_callback'      => false,
+            'requires_authorization' => true,
+        ];
     }
 
     /**
@@ -273,45 +284,45 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
      */
     public function appendToForm(&$builder, $data, $formArea)
     {
-        if ('features' == $formArea) {
+        if ($formArea == 'features') {
             $builder->add(
                 'updateBlanks',
-                ChoiceType::class,
+                'choice',
                 [
                     'choices' => [
-                        'mautic.integrations.blanks' => 'updateBlanks',
+                        'updateBlanks' => 'mautic.integrations.blanks',
                     ],
-                    'expanded'          => true,
-                    'multiple'          => true,
-                    'label'             => 'mautic.integrations.form.blanks',
-                    'label_attr'        => ['class' => 'control-label'],
-                    'placeholder'       => false,
-                    'required'          => false,
+                    'expanded'    => true,
+                    'multiple'    => true,
+                    'label'       => 'mautic.integrations.form.blanks',
+                    'label_attr'  => ['class' => 'control-label'],
+                    'empty_value' => false,
+                    'required'    => false,
                 ]
             );
             $builder->add(
                 'objects',
-                ChoiceType::class,
+                'choice',
                 [
                     'choices' => [
-                        'mautic.connectwise.object.contact' => 'Contact',
-                        'mautic.connectwise.object.company' => 'company',
+                        'Contact' => 'mautic.connectwise.object.contact',
+                        'company' => 'mautic.connectwise.object.company',
                     ],
-                    'expanded'          => true,
-                    'multiple'          => true,
-                    'label'             => 'mautic.connectwise.form.objects_to_pull_from',
-                    'label_attr'        => ['class' => ''],
-                    'placeholder'       => false,
-                    'required'          => false,
+                    'expanded'    => true,
+                    'multiple'    => true,
+                    'label'       => 'mautic.connectwise.form.objects_to_pull_from',
+                    'label_attr'  => ['class' => ''],
+                    'empty_value' => false,
+                    'required'    => false,
                 ]
             );
         }
 
-        if ('integration' == $formArea) {
+        if ($formArea == 'integration') {
             if ($this->isAuthorized()) {
                 $builder->add(
                     'push_activities',
-                    YesNoButtonGroupType::class,
+                    'yesno_button_group',
                     [
                         'label'      => 'mautic.plugin.config.push.activities',
                         'label_attr' => ['class' => 'control-label'],
@@ -325,10 +336,11 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
 
                 $builder->add(
                         'campaign_task',
-                        IntegrationCampaignsTaskType::class,
+                        'integration_campaign_task',
                         [
-                            'label' => false,
-                            'attr'  => [
+                            'label'  => false,
+                            'helper' => $this->factory->getHelper('integration'),
+                            'attr'   => [
                                 'data-hide-on' => '{"campaignevent_properties_config_push_activities_0":"checked"}',
                             ],
                             'data' => (isset($data['campaign_task'])) ? $data['campaign_task'] : [],
@@ -462,6 +474,9 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
 
     /**
      * Get Companies from connectwise.
+     *
+     * @param array $params
+     * @param null  $query
      */
     public function getCompanies(array $params = [])
     {
@@ -482,15 +497,15 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
         $executed            = 0;
         $integrationEntities = [];
         try {
-            while ($records = ('Contact' == $object)
+            while ($records = ($object == 'Contact')
                 ? $this->getApiHelper()->getContacts($params, $page)
                 : $this->getApiHelper()->getCompanies($params, $page)) {
-                $mauticReferenceObject = ('Contact' == $object) ? 'lead' : 'company';
+                $mauticReferenceObject = ($object == 'Contact') ? 'lead' : 'company';
                 foreach ($records as $record) {
                     if (is_array($record)) {
                         $id            = $record['id'];
                         $formattedData = $this->amendLeadDataBeforeMauticPopulate($record, $object);
-                        $entity        = ('Contact' == $object)
+                        $entity        = ($object == 'Contact')
                             ? $this->getMauticLead($formattedData)
                             : $this->getMauticCompany(
                                 $formattedData,
@@ -542,7 +557,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
         if (empty($data)) {
             return $fieldsValues;
         }
-        if ('Contact' == $object) {
+        if ($object == 'Contact') {
             $fields = $this->getContactFields();
         } else {
             $fields = $this->getCompanyFields();
@@ -551,7 +566,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
         foreach ($data as $key => $field) {
             if (isset($fields[$key])) {
                 $name = $key;
-                if ('array' == $fields[$key]['type']) {
+                if ($fields[$key]['type'] == 'array') {
                     $items = $fields[$key]['items'];
                     foreach ($field as $item) {
                         if (is_array($item[key($items['name'])])) {
@@ -563,7 +578,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                         }
                         $fieldsValues[$name] = $item[$items['value']];
                     }
-                } elseif ('ref' == $fields[$key]['type']) {
+                } elseif ($fields[$key]['type'] == 'ref') {
                     $fieldsValues[$name] = $field[$fields[$key]['value']];
                 } else {
                     $fieldsValues[$name] = $field;
@@ -583,7 +598,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
      * @param $mauticObjectReference
      * @param $integrationEntityId
      *
-     * @return IntegrationEntity|object|null
+     * @return IntegrationEntity|null|object
      */
     public function saveSyncedData($entity, $object, $mauticObjectReference, $integrationEntityId)
     {
@@ -660,7 +675,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                 $id                    = $personData['id'];
                 $integrationEntities[] = $this->saveSyncedData($lead, $object, 'lead', $id);
 
-                if (isset($config['push_activities']) and true == $config['push_activities']) {
+                if (isset($config['push_activities']) and $config['push_activities'] == true) {
                     $savedEntities = $this->createActivity($config['campaign_task'], $id, $lead->getId());
                     if ($savedEntities) {
                         $integrationEntities[] = $savedEntities;
@@ -705,8 +720,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
 
         $leadFields = array_diff_key($leadFields, array_flip($fieldsToUpdateInCW));
         $leadFields = $this->getBlankFieldsToUpdate($leadFields, $cwContactExists, $objectFields, $config);
-
-        return $this->populateLeadData(
+        $mappedData = $this->populateLeadData(
             $lead,
             [
                 'leadFields'       => $leadFields,
@@ -718,6 +732,8 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                 'communicationItems' => $communicationItems,
             ]
         );
+
+        return $mappedData;
     }
 
     /**
@@ -751,13 +767,13 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                 continue;
             }
 
-            if ('communicationItems' == $integrationKey) {
+            if ($integrationKey == 'communicationItems') {
                 $communicationItems = [];
                 foreach ($field['items']['keys'] as $keyItem => $item) {
                     $defaultValue = [];
                     $keyExists    = false;
                     if (isset($leadFields[$item])) {
-                        if ('Email' == $item) {
+                        if ($item == 'Email') {
                             $defaultValue = ['defaultFlag' => true];
                         }
                         $mauticKey = $leadFields[$item];
@@ -787,7 +803,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                 }
             }
 
-            if ('company' === $integrationKey && !empty($fields['company']['value'])) {
+            if ($integrationKey === 'company' && !empty($fields['company']['value'])) {
                 try {
                     $foundCompanies = $this->getApiHelper()->getCompanies([
                         'conditions' => [
@@ -848,7 +864,9 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
             $fields = array_flip($fieldsToUpdate);
         }
 
-        return $this->prepareFieldsForSync($fields, $fieldsToUpdate, $objects);
+        $fieldsToUpdate = $this->prepareFieldsForSync($fields, $fieldsToUpdate, $objects);
+
+        return $fieldsToUpdate;
     }
 
     /**
@@ -860,7 +878,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
      */
     protected function getPriorityFieldsForMautic($config, $object = null, $priorityObject = 'mautic')
     {
-        if ('company' == $object) {
+        if ($object == 'company') {
             $priority = parent::getPriorityFieldsForMautic($config, $object, 'mautic_company');
             $fields   = array_intersect_key($config['companyFields'], $priority);
         } else {
@@ -932,7 +950,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
                 $existingContactsIds = array_column(array_filter(
                     $contacts,
                     function ($contact) {
-                        return 'lead' === $contact['internal_entity'];
+                        return $contact['internal_entity'] === 'lead';
                     }
                 ), 'integration_entity_id');
 
@@ -1013,7 +1031,7 @@ class ConnectwiseIntegration extends CrmAbstractIntegration
     {
         $recordList = [];
 
-        foreach ($records as $record) {
+        foreach ($records as $i => $record) {
             if ($index && isset($record[$index])) {
                 $record = $record[$index];
             }

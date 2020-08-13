@@ -15,7 +15,6 @@ use Mautic\CoreBundle\Helper\CoreParametersHelper;
 use Mautic\FormBundle\Model\FormModel;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -32,6 +31,8 @@ class SocialLoginType extends AbstractType
 
     /**
      * SocialLoginType constructor.
+     *
+     * @param IntegrationHelper $helper
      */
     public function __construct(IntegrationHelper $helper, FormModel $form, CoreParametersHelper $coreParametersHelper)
     {
@@ -40,6 +41,10 @@ class SocialLoginType extends AbstractType
         $this->coreParametersHelper = $coreParametersHelper;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $integrations       = '';
@@ -54,7 +59,7 @@ class SocialLoginType extends AbstractType
 
                 $builder->add(
                     'authUrl_'.$integrationObject->getName(),
-                    HiddenType::class,
+                    'hidden',
                     [
                         'data' => $model->buildUrl('mautic_integration_auth_user', $integration, true, []),
                     ]
@@ -62,9 +67,9 @@ class SocialLoginType extends AbstractType
 
                 $builder->add(
                     'buttonImageUrl',
-                    HiddenType::class,
+                    'hidden',
                     [
-                        'data' => $this->coreParametersHelper->get('site_url').'/'.$this->coreParametersHelper->get('image_path').'/',
+                        'data' => $this->coreParametersHelper->getParameter('site_url').'/'.$this->coreParametersHelper->getParameter('image_path').'/',
                     ]
                 );
             }
@@ -72,7 +77,7 @@ class SocialLoginType extends AbstractType
 
         $builder->add(
             'integrations',
-            HiddenType::class,
+            'hidden',
             [
                 'data' => $integrations,
             ]
@@ -82,7 +87,7 @@ class SocialLoginType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'sociallogin';
     }

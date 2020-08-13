@@ -13,38 +13,26 @@ namespace MauticPlugin\MauticFullContactBundle\EventListener;
 
 use Mautic\CoreBundle\CoreEvents;
 use Mautic\CoreBundle\Event\CustomButtonEvent;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\CoreBundle\Templating\Helper\ButtonHelper;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticFullContactBundle\Integration\FullContactIntegration;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 
-class ButtonSubscriber implements EventSubscriberInterface
+class ButtonSubscriber extends CommonSubscriber
 {
     /**
      * @var IntegrationHelper
      */
-    private $helper;
+    protected $helper;
 
     /**
-     * @var TranslatorInterface
+     * ButtonSubscriber constructor.
+     *
+     * @param IntegrationHelper $helper
      */
-    private $translator;
-
-    /**
-     * @var RouterInterface
-     */
-    private $router;
-
-    public function __construct(
-        IntegrationHelper $helper,
-        TranslatorInterface $translator,
-        RouterInterface $router
-    ) {
-        $this->helper     = $helper;
-        $this->translator = $translator;
-        $this->router     = $router;
+    public function __construct(IntegrationHelper $helper)
+    {
+        $this->helper = $helper;
     }
 
     public static function getSubscribedEvents()
@@ -54,6 +42,9 @@ class ButtonSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param CustomButtonEvent $event
+     */
     public function injectViewButtons(CustomButtonEvent $event)
     {
         // get api_key from plugin settings

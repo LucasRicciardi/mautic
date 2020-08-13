@@ -1,5 +1,6 @@
 <?php
 
+
 /*
  * @copyright   2014 Mautic Contributors. All rights reserved
  * @author      Mautic
@@ -11,32 +12,17 @@
 
 namespace MauticPlugin\MauticCrmBundle\Integration;
 
-use Doctrine\ORM\EntityManager;
-use Mautic\CoreBundle\Helper\CacheStorageHelper;
-use Mautic\CoreBundle\Helper\EncryptionHelper;
-use Mautic\CoreBundle\Helper\PathsHelper;
 use Mautic\CoreBundle\Helper\UserHelper;
-use Mautic\CoreBundle\Model\NotificationModel;
 use Mautic\LeadBundle\DataObject\LeadManipulator;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\StagesChangeLog;
-use Mautic\LeadBundle\Model\CompanyModel;
-use Mautic\LeadBundle\Model\DoNotContact;
-use Mautic\LeadBundle\Model\FieldModel;
-use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\PluginBundle\Entity\IntegrationEntityRepository;
-use Mautic\PluginBundle\Model\IntegrationEntityModel;
 use Mautic\StageBundle\Entity\Stage;
 use MauticPlugin\MauticCrmBundle\Api\HubspotApi;
-use Monolog\Logger;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\Routing\Router;
-use Symfony\Component\Translation\TranslatorInterface;
 
 /**
+ * Class HubspotIntegration.
+ *
  * @method HubspotApi getApiHelper
  */
 class HubspotIntegration extends CrmAbstractIntegration
@@ -46,45 +32,16 @@ class HubspotIntegration extends CrmAbstractIntegration
      */
     protected $userHelper;
 
-    public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        CacheStorageHelper $cacheStorageHelper,
-        EntityManager $entityManager,
-        Session $session,
-        RequestStack $requestStack,
-        Router $router,
-        TranslatorInterface $translator,
-        Logger $logger,
-        EncryptionHelper $encryptionHelper,
-        LeadModel $leadModel,
-        CompanyModel $companyModel,
-        PathsHelper $pathsHelper,
-        NotificationModel $notificationModel,
-        FieldModel $fieldModel,
-        IntegrationEntityModel $integrationEntityModel,
-        DoNotContact $doNotContact,
-        UserHelper $userHelper
-    ) {
+    /**
+     * HubspotIntegration constructor.
+     *
+     * @param UserHelper $userHelper
+     */
+    public function __construct(UserHelper $userHelper)
+    {
         $this->userHelper = $userHelper;
 
-        parent::__construct(
-            $eventDispatcher,
-            $cacheStorageHelper,
-            $entityManager,
-            $session,
-            $requestStack,
-            $router,
-            $translator,
-            $logger,
-            $encryptionHelper,
-            $leadModel,
-            $companyModel,
-            $pathsHelper,
-            $notificationModel,
-            $fieldModel,
-            $integrationEntityModel,
-            $doNotContact
-        );
+        parent::__construct();
     }
 
     /**
@@ -133,6 +90,21 @@ class HubspotIntegration extends CrmAbstractIntegration
     public function getSupportedFeatures()
     {
         return ['push_lead', 'get_leads'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getFormSettings()
+    {
+        $enableDataPriority = $this->getDataPriority();
+
+        return [
+            'requires_callback'      => false,
+            'requires_authorization' => false,
+            'default_features'       => [],
+            'enable_data_priority'   => $enableDataPriority,
+        ];
     }
 
     /**
@@ -207,7 +179,7 @@ class HubspotIntegration extends CrmAbstractIntegration
         try {
             if ($this->isAuthorized()) {
                 if (!empty($hubspotObjects) and is_array($hubspotObjects)) {
-                    foreach ($hubspotObjects as $object) {
+                    foreach ($hubspotObjects as $key => $object) {
                         // Check the cache first
                         $settings['cache_suffix'] = $cacheSuffix = '.'.$object;
                         if ($fields = parent::getAvailableLeadFields($settings)) {
@@ -261,7 +233,9 @@ class HubspotIntegration extends CrmAbstractIntegration
             $fields = array_flip($fieldsToUpdate);
         }
 
-        return $this->prepareFieldsForSync($fields, $fieldsToUpdate, $objects);
+        $fieldsToUpdate = $this->prepareFieldsForSync($fields, $fieldsToUpdate, $objects);
+
+        return $fieldsToUpdate;
     }
 
     /**
@@ -277,7 +251,7 @@ class HubspotIntegration extends CrmAbstractIntegration
 
         if (!$updateLink) {
             foreach ($leadData as $field => $value) {
-                if ('lifecyclestage' == $field || 'associatedcompanyid' == $field) {
+                if ($field == 'lifecyclestage' || $field == 'associatedcompanyid') {
                     continue;
                 }
                 $formattedLeadData['properties'][] = [
@@ -319,21 +293,21 @@ class HubspotIntegration extends CrmAbstractIntegration
      */
     public function appendToForm(&$builder, $data, $formArea)
     {
-        if ('features' == $formArea) {
+        if ($formArea == 'features') {
             $builder->add(
                 'objects',
-                ChoiceType::class,
+                'choice',
                 [
                     'choices' => [
-                        'mautic.hubspot.object.contact' => 'contacts',
-                        'mautic.hubspot.object.company' => 'company',
+                        'contacts' => 'mautic.hubspot.object.contact',
+                        'company'  => 'mautic.hubspot.object.company',
                     ],
-                    'expanded'          => true,
-                    'multiple'          => true,
-                    'label'             => $this->getTranslator()->trans('mautic.crm.form.objects_to_pull_from', ['%crm%' => 'Hubspot']),
-                    'label_attr'        => ['class' => ''],
-                    'placeholder'       => false,
-                    'required'          => false,
+                    'expanded'    => true,
+                    'multiple'    => true,
+                    'label'       => $this->getTranslator()->trans('mautic.crm.form.objects_to_pull_from', ['%crm%' => 'Hubspot']),
+                    'label_attr'  => ['class' => ''],
+                    'empty_value' => false,
+                    'required'    => false,
                 ]
             );
         }
@@ -354,9 +328,9 @@ class HubspotIntegration extends CrmAbstractIntegration
             $value              = str_replace(';', '|', $field['value']);
             $fieldsValues[$key] = $value;
         }
-        if ('Lead' == $object && !isset($fieldsValues['email'])) {
+        if ($object == 'Lead' && !isset($fieldsValues['email'])) {
             foreach ($data['identity-profiles'][0]['identities'] as $identifiedProfile) {
-                if ('EMAIL' == $identifiedProfile['type']) {
+                if ($identifiedProfile['type'] == 'EMAIL') {
                     $fieldsValues['email'] = $identifiedProfile['value'];
                 }
             }

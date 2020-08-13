@@ -33,15 +33,13 @@ return [
     'services' => [
         'events' => [
             'mautic.plugin.clearbit.button.subscriber' => [
-                'class'     => \MauticPlugin\MauticClearbitBundle\EventListener\ButtonSubscriber::class,
+                'class'     => 'MauticPlugin\MauticClearbitBundle\EventListener\ButtonSubscriber',
                 'arguments' => [
                     'mautic.helper.integration',
-                    'translator',
-                    'router',
                 ],
             ],
             'mautic.plugin.clearbit.lead.subscriber' => [
-                'class'     => \MauticPlugin\MauticClearbitBundle\EventListener\LeadSubscriber::class,
+                'class'     => 'MauticPlugin\MauticClearbitBundle\EventListener\LeadSubscriber',
                 'arguments' => [
                     'mautic.plugin.clearbit.lookup_helper',
                 ],
@@ -50,9 +48,11 @@ return [
         'forms' => [
             'mautic.form.type.clearbit_lookup' => [
                 'class' => 'MauticPlugin\MauticClearbitBundle\Form\Type\LookupType',
+                'alias' => 'clearbit_lookup',
             ],
             'mautic.form.type.clearbit_batch_lookup' => [
                 'class' => 'MauticPlugin\MauticClearbitBundle\Form\Type\BatchLookupType',
+                'alias' => 'clearbit_batch_lookup',
             ],
         ],
         'others' => [
@@ -71,22 +71,6 @@ return [
             'mautic.integration.clearbit' => [
                 'class'     => \MauticPlugin\MauticClearbitBundle\Integration\ClearbitIntegration::class,
                 'arguments' => [
-                    'event_dispatcher',
-                    'mautic.helper.cache_storage',
-                    'doctrine.orm.entity_manager',
-                    'session',
-                    'request_stack',
-                    'router',
-                    'translator',
-                    'logger',
-                    'mautic.helper.encryption',
-                    'mautic.lead.model.lead',
-                    'mautic.lead.model.company',
-                    'mautic.helper.paths',
-                    'mautic.core.model.notification',
-                    'mautic.lead.model.field',
-                    'mautic.plugin.model.integration_entity',
-                    'mautic.lead.model.dnc',
                 ],
             ],
         ],

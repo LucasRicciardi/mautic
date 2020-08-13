@@ -8,6 +8,7 @@ class GotowebinarApi extends CitrixApi
 {
     /**
      * @param string $operation
+     * @param array  $parameters
      * @param string $method
      *
      * @return mixed|string

@@ -8,6 +8,7 @@ class GototrainingApi extends CitrixApi
 {
     /**
      * @param string $operation
+     * @param array  $parameters
      * @param string $method
      * @param string $route
      *

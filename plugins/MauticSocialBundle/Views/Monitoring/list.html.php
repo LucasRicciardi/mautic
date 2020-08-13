@@ -8,7 +8,7 @@
  *
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-if ('index' == $tmpl) {
+if ($tmpl == 'index') {
     $view->extend('MauticSocialBundle:Monitoring:index.html.php');
 }
 ?>
@@ -26,7 +26,7 @@ if ('index' == $tmpl) {
                         'langVar'         => 'mautic.social.monitoring',
                         'routeBase'       => 'social',
                         'templateButtons' => [
-                            'delete' => $view['security']->isGranted('mauticSocial:monitoring:delete'),
+                            'delete' => $view['security']->isGranted('plugin:mauticSocial:monitoring:delete'),
                         ],
                     ]
                 );
@@ -64,8 +64,8 @@ if ('index' == $tmpl) {
                             [
                                 'item'            => $item,
                                 'templateButtons' => [
-                                    'edit'   => $view['security']->isGranted('mauticSocial:monitoring:edit'),
-                                    'delete' => $view['security']->isGranted('mauticSocial:monitoring:delete'),
+                                    'edit'   => $view['security']->isGranted('plugin:mauticSocial:monitoring:edit'),
+                                    'delete' => $view['security']->isGranted('plugin:mauticSocial:monitoring:delete'),
                                 ],
                                 'routeBase'  => 'social',
                                 'langVar'    => 'mautic.social.monitoring',

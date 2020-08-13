@@ -33,6 +33,8 @@ class Organizer
 
     /**
      * ObjectOrganizer constructor.
+     *
+     * @param array $records
      */
     public function __construct(array $records)
     {

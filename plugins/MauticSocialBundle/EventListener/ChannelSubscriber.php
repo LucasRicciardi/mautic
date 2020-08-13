@@ -14,17 +14,24 @@ namespace MauticPlugin\MauticSocialBundle\EventListener;
 use Mautic\ChannelBundle\ChannelEvents;
 use Mautic\ChannelBundle\Event\ChannelEvent;
 use Mautic\ChannelBundle\Model\MessageModel;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
-use MauticPlugin\MauticSocialBundle\Form\Type\TweetListType;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class ChannelSubscriber implements EventSubscriberInterface
+/**
+ * Class ChannelSubscriber.
+ */
+class ChannelSubscriber extends CommonSubscriber
 {
     /**
      * @var IntegrationHelper
      */
-    private $helper;
+    protected $helper;
 
+    /**
+     * ChannelSubscriber constructor.
+     *
+     * @param IntegrationHelper $helper
+     */
     public function __construct(IntegrationHelper $helper)
     {
         $this->helper = $helper;
@@ -40,6 +47,9 @@ class ChannelSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param ChannelEvent $event
+     */
     public function onAddChannel(ChannelEvent $event)
     {
         $integration = $this->helper->getIntegrationObject('Twitter');
@@ -54,7 +64,7 @@ class ChannelSubscriber implements EventSubscriberInterface
                             'asset.download',
                             'form.submit',
                         ],
-                        'lookupFormType' => TweetListType::class,
+                        'lookupFormType' => 'tweet_list',
                         'repository'     => 'MauticSocialBundle:Tweet',
                     ],
                 ]

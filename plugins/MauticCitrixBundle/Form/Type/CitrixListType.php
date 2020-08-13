@@ -11,9 +11,7 @@
 
 namespace MauticPlugin\MauticCitrixBundle\Form\Type;
 
-use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -28,8 +26,8 @@ class CitrixListType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
-            'placeholder',
-            TextType::class,
+            'empty_value',
+            'text',
             [
                 'label'      => 'mautic.form.field.form.emptyvalue',
                 'label_attr' => ['class' => 'control-label'],
@@ -46,7 +44,7 @@ class CitrixListType extends AbstractType
 
         $builder->add(
             'multiple',
-            YesNoButtonGroupType::class,
+            'yesno_button_group',
             [
                 'label'    => 'mautic.form.field.form.multiple',
                 'data'     => $default,
@@ -72,7 +70,7 @@ class CitrixListType extends AbstractType
     /**
      * {@inheritdoc}
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'citrix_list';
     }

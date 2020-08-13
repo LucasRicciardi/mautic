@@ -11,25 +11,10 @@
 
 namespace MauticPlugin\MauticSocialBundle\Integration;
 
-use Doctrine\ORM\EntityManager;
-use Mautic\CoreBundle\Helper\CacheStorageHelper;
-use Mautic\CoreBundle\Helper\EncryptionHelper;
-use Mautic\CoreBundle\Helper\PathsHelper;
-use Mautic\CoreBundle\Model\NotificationModel;
-use Mautic\LeadBundle\Model\CompanyModel;
-use Mautic\LeadBundle\Model\DoNotContact;
-use Mautic\LeadBundle\Model\FieldModel;
-use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use Mautic\PluginBundle\Model\IntegrationEntityModel;
-use Monolog\Logger;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilder;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\Routing\Router;
-use Symfony\Component\Translation\TranslatorInterface;
 
 abstract class SocialIntegration extends AbstractIntegration
 {
@@ -40,45 +25,12 @@ abstract class SocialIntegration extends AbstractIntegration
      */
     protected $integrationHelper;
 
-    public function __construct(
-        EventDispatcherInterface $eventDispatcher,
-        CacheStorageHelper $cacheStorageHelper,
-        EntityManager $entityManager,
-        Session $session,
-        RequestStack $requestStack,
-        Router $router,
-        TranslatorInterface $translator,
-        Logger $logger,
-        EncryptionHelper $encryptionHelper,
-        LeadModel $leadModel,
-        CompanyModel $companyModel,
-        PathsHelper $pathsHelper,
-        NotificationModel $notificationModel,
-        FieldModel $fieldModel,
-        IntegrationEntityModel $integrationEntityModel,
-        DoNotContact $doNotContact,
-        IntegrationHelper $integrationHelper
-    ) {
+    /**
+     * @param IntegrationHelper $integrationHelper
+     */
+    public function setIntegrationHelper(IntegrationHelper $integrationHelper)
+    {
         $this->integrationHelper = $integrationHelper;
-
-        parent::__construct(
-            $eventDispatcher,
-            $cacheStorageHelper,
-            $entityManager,
-            $session,
-            $requestStack,
-            $router,
-            $translator,
-            $logger,
-            $encryptionHelper,
-            $leadModel,
-            $companyModel,
-            $pathsHelper,
-            $notificationModel,
-            $fieldModel,
-            $integrationEntityModel,
-            $doNotContact
-        );
     }
 
     /**
@@ -88,11 +40,10 @@ abstract class SocialIntegration extends AbstractIntegration
      */
     public function appendToForm(&$builder, $data, $formArea)
     {
-        if ('features' == $formArea) {
-            $name     = strtolower($this->getName());
-            $formType = $this->getFormType();
-            if ($formType) {
-                $builder->add('shareButton', $formType, [
+        if ($formArea == 'features') {
+            $name = strtolower($this->getName());
+            if ($this->factory->serviceExists('mautic.form.type.social.'.$name)) {
+                $builder->add('shareButton', 'socialmedia_'.$name, [
                     'label'    => 'mautic.integration.form.sharebutton',
                     'required' => false,
                     'data'     => (isset($data['shareButton'])) ? $data['shareButton'] : [],
@@ -146,7 +97,7 @@ abstract class SocialIntegration extends AbstractIntegration
                         }
                         break;
                     case 'array_object':
-                        if ('urls' == $field || 'url' == $field) {
+                        if ($field == 'urls' || $field == 'url') {
                             foreach ($socialProfileUrls as $p => $d) {
                                 $fields["{$p}ProfileHandle"] = (!$label)
                                     ? $this->translator->transConditional("mautic.integration.common.{$p}ProfileHandle", "mautic.integration.{$s}.{$p}ProfileHandle")
@@ -299,11 +250,4 @@ abstract class SocialIntegration extends AbstractIntegration
 
         return $accessToken;
     }
-
-    /**
-     * Returns form type.
-     *
-     * @return string|null
-     */
-    abstract public function getFormType();
 }

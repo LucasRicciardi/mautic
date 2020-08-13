@@ -14,8 +14,6 @@ namespace MauticPlugin\MauticFullContactBundle\Controller;
 use Mautic\FormBundle\Controller\FormController;
 use Mautic\LeadBundle\Entity\Company;
 use Mautic\LeadBundle\Entity\Lead;
-use MauticPlugin\MauticFullContactBundle\Form\Type\BatchLookupType;
-use MauticPlugin\MauticFullContactBundle\Form\Type\LookupType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -70,7 +68,7 @@ class FullContactController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            LookupType::class,
+                            'fullcontact_lookup',
                             [
                                 'objectId' => $objectId,
                             ],
@@ -219,7 +217,7 @@ class FullContactController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            BatchLookupType::class,
+                            'fullcontact_batch_lookup',
                             [],
                             [
                                 'action' => $route,
@@ -325,7 +323,7 @@ class FullContactController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            LookupType::class,
+                            'fullcontact_lookup',
                             [
                                 'objectId' => $objectId,
                             ],
@@ -473,7 +471,7 @@ class FullContactController extends FormController
                 [
                     'viewParameters' => [
                         'form' => $this->createForm(
-                            BatchLookupType::class,
+                            'fullcontact_batch_lookup',
                             [],
                             [
                                 'action' => $route,

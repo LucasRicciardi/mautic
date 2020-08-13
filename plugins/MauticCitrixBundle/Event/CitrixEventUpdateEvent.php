@@ -14,16 +14,31 @@ namespace MauticPlugin\MauticCitrixBundle\Event;
 use Mautic\CoreBundle\Event\CommonEvent;
 use Mautic\LeadBundle\Entity\Lead;
 
+/**
+ * Class CitrixEventUpdateEvent.
+ */
 class CitrixEventUpdateEvent extends CommonEvent
 {
+    /**
+     * @var
+     */
     private $product;
-
+    /**
+     * @var
+     */
     private $eventName;
-
+    /**
+     * @var
+     */
     private $eventType;
-
+    /**
+     * @var
+     */
     private $email;
 
+    /**
+     * @var
+     */
     private $eventDesc;
 
     /**
@@ -32,10 +47,13 @@ class CitrixEventUpdateEvent extends CommonEvent
     private $lead;
 
     /**
-     * @param $product
-     * @param $eventName
-     * @param $eventDesc
-     * @param $eventType
+     * CitrixEventUpdateEvent constructor.
+     *
+     * @param      $product
+     * @param      $eventName
+     * @param      $eventDesc
+     * @param      $eventType
+     * @param Lead $lead
      */
     public function __construct($product, $eventName, $eventDesc, $eventType, Lead $lead)
     {

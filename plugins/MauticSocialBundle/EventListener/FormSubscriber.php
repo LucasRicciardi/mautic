@@ -11,12 +11,14 @@
 
 namespace MauticPlugin\MauticSocialBundle\EventListener;
 
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\FormBundle\Event\FormBuilderEvent;
 use Mautic\FormBundle\FormEvents;
-use MauticPlugin\MauticSocialBundle\Form\Type\SocialLoginType;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class FormSubscriber implements EventSubscriberInterface
+/**
+ * Class FormSubscriber.
+ */
+class FormSubscriber extends CommonSubscriber
 {
     /**
      * {@inheritdoc}
@@ -28,11 +30,14 @@ class FormSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param FormBuilderEvent $event
+     */
     public function onFormBuild(FormBuilderEvent $event)
     {
         $action = [
             'label'          => 'mautic.plugin.actions.socialLogin',
-            'formType'       => SocialLoginType::class,
+            'formType'       => 'sociallogin',
             'template'       => 'MauticSocialBundle:Integration:login.html.php',
             'builderOptions' => [
                 'addLeadFieldList' => false,

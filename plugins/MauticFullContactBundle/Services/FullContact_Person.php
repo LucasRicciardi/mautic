@@ -27,7 +27,7 @@ class FullContact_Person extends FullContact_Base
     /**
      * Supported lookup methods.
      *
-     * @var array
+     * @var
      */
     protected $_supportedMethods = ['email', 'phone', 'twitter'];
     protected $_resourceUri      = '/person.json';

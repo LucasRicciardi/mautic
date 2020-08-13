@@ -8,7 +8,7 @@
  *
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-if ('index' == $tmpl) {
+if ($tmpl == 'index') {
     $view->extend('MauticSocialBundle:Tweet:index.html.php');
 }
 ?>
@@ -26,7 +26,7 @@ if ('index' == $tmpl) {
                         'langVar'         => 'mautic.social.tweets',
                         'routeBase'       => 'mautic_tweet',
                         'templateButtons' => [
-                            'delete' => $view['security']->isGranted('mauticSocial:tweet:delete'),
+                            'delete' => $view['security']->isGranted('plugin:mauticSocial:tweet:delete'),
                         ],
                     ]
                 );
@@ -64,8 +64,8 @@ if ('index' == $tmpl) {
                             [
                                 'item'            => $item,
                                 'templateButtons' => [
-                                    'edit'   => $view['security']->isGranted('mauticSocial:tweet:edit'),
-                                    'delete' => $view['security']->isGranted('mauticSocial:tweet:delete'),
+                                    'edit'   => $view['security']->isGranted('plugin:mauticSocial:tweet:edit'),
+                                    'delete' => $view['security']->isGranted('plugin:mauticSocial:tweet:delete'),
                                 ],
                                 'routeBase'  => 'mautic_tweet',
                                 'langVar'    => 'mautic.integration.Twitter',

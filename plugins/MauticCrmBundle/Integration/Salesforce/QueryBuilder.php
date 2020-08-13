@@ -16,6 +16,9 @@ use MauticPlugin\MauticCrmBundle\Integration\Salesforce\Exception\NoObjectsToFet
 class QueryBuilder
 {
     /**
+     * @param array $fields
+     * @param array $ids
+     *
      * @return string
      *
      * @throws NoObjectsToFetchException
@@ -33,6 +36,9 @@ class QueryBuilder
     }
 
     /**
+     * @param array $fields
+     * @param array $ids
+     *
      * @return string
      *
      * @throws NoObjectsToFetchException
@@ -50,6 +56,8 @@ class QueryBuilder
     }
 
     /**
+     * @param array $fields
+     *
      * @return string
      */
     private static function getFieldString(array $fields)

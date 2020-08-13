@@ -12,7 +12,6 @@
 namespace MauticPlugin\MauticFocusBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Routing\RouterInterface;
@@ -28,16 +27,23 @@ class FocusShowType extends AbstractType
      */
     protected $router;
 
+    /**
+     * @param RouterInterface $router
+     */
     public function __construct(RouterInterface $router)
     {
         $this->router = $router;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
             'focus',
-            FocusListType::class,
+            'focus_list',
             [
                 'label'      => 'mautic.focus.focusitem.selectitem',
                 'label_attr' => ['class' => 'control-label'],
@@ -69,7 +75,7 @@ class FocusShowType extends AbstractType
 
             $builder->add(
                 'newFocusButton',
-                ButtonType::class,
+                'button',
                 [
                     'attr' => [
                         'class'   => 'btn btn-primary btn-nospin',
@@ -95,7 +101,7 @@ class FocusShowType extends AbstractType
 
             $builder->add(
                 'editFocusButton',
-                ButtonType::class,
+                'button',
                 [
                     'attr' => [
                         'class'    => 'btn btn-primary btn-nospin',
@@ -109,6 +115,9 @@ class FocusShowType extends AbstractType
         }
     }
 
+    /**
+     * @param OptionsResolver $resolver
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefined(['update_select']);
@@ -117,7 +126,7 @@ class FocusShowType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'focusshow_list';
     }

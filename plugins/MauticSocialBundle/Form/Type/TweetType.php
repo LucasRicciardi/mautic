@@ -12,18 +12,10 @@
 namespace MauticPlugin\MauticSocialBundle\Form\Type;
 
 use Doctrine\ORM\EntityManager;
-use Mautic\AssetBundle\Form\Type\AssetListType;
-use Mautic\CategoryBundle\Form\Type\CategoryListType;
 use Mautic\CoreBundle\Form\DataTransformer\IdToEntityModelTransformer;
-use Mautic\CoreBundle\Form\Type\FormButtonsType;
-use Mautic\PageBundle\Form\Type\PageListType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ButtonType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class TweetType extends AbstractType
@@ -33,16 +25,23 @@ class TweetType extends AbstractType
      */
     protected $em;
 
+    /**
+     * @param EntityManager $em
+     */
     public function __construct(EntityManager $em)
     {
         $this->em = $em;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
             'name',
-            TextType::class,
+            'text',
             [
                 'label'      => 'mautic.social.monitoring.twitter.tweet.name',
                 'required'   => true,
@@ -63,7 +62,7 @@ class TweetType extends AbstractType
 
         $builder->add(
             'description',
-            TextareaType::class,
+            'textarea',
             [
                 'label'      => 'mautic.social.monitoring.twitter.tweet.description',
                 'required'   => false,
@@ -77,7 +76,7 @@ class TweetType extends AbstractType
 
         $builder->add(
             'text',
-            TextareaType::class,
+            'textarea',
             [
                 'label'      => 'mautic.social.monitoring.twitter.tweet.text',
                 'required'   => true,
@@ -100,10 +99,10 @@ class TweetType extends AbstractType
         $builder->add(
                 $builder->create(
                 'asset',
-                AssetListType::class,
+                'asset_list',
                 [
                     'label'       => 'mautic.social.monitoring.twitter.assets',
-                    'placeholder' => 'mautic.social.monitoring.list.choose',
+                    'empty_value' => 'mautic.social.monitoring.list.choose',
                     'label_attr'  => ['class' => 'control-label'],
                     'multiple'    => false,
                     'attr'        => [
@@ -118,10 +117,10 @@ class TweetType extends AbstractType
         $builder->add(
             $builder->create(
                 'page',
-                PageListType::class,
+                'page_list',
                 [
                     'label'       => 'mautic.social.monitoring.twitter.pages',
-                    'placeholder' => 'mautic.social.monitoring.list.choose',
+                    'empty_value' => 'mautic.social.monitoring.list.choose',
                     'label_attr'  => ['class' => 'control-label'],
                     'multiple'    => false,
                     'attr'        => [
@@ -134,7 +133,7 @@ class TweetType extends AbstractType
 
         $builder->add(
             'handle',
-            ButtonType::class,
+            'button',
             [
                 'label' => 'mautic.social.twitter.handle',
                 'attr'  => [
@@ -144,21 +143,21 @@ class TweetType extends AbstractType
         );
 
         //add category
-        $builder->add('category', CategoryListType::class, [
+        $builder->add('category', 'category', [
             'bundle' => 'plugin:mauticSocial',
         ]);
 
         if (!empty($options['update_select'])) {
             $builder->add(
                 'buttons',
-                FormButtonsType::class,
+                'form_buttons',
                 [
                     'apply_text' => false,
                 ]
             );
             $builder->add(
                 'updateSelect',
-                HiddenType::class,
+                'hidden',
                 [
                     'data'   => $options['update_select'],
                     'mapped' => false,
@@ -167,7 +166,7 @@ class TweetType extends AbstractType
         } else {
             $builder->add(
                 'buttons',
-                FormButtonsType::class
+                'form_buttons'
             );
         }
 
@@ -176,12 +175,15 @@ class TweetType extends AbstractType
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    /**
+     * @param OptionsResolverInterface $resolver
+     */
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefined(['update_select']);
+        $resolver->setOptional(['update_select']);
     }
 
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'twitter_tweet';
     }

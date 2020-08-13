@@ -17,7 +17,6 @@ use Mautic\LeadBundle\Entity\Lead;
 use MauticPlugin\MauticSocialBundle\Entity\Tweet;
 use MauticPlugin\MauticSocialBundle\Entity\TweetStat;
 use MauticPlugin\MauticSocialBundle\Event as Events;
-use MauticPlugin\MauticSocialBundle\Form\Type\TweetType;
 use MauticPlugin\MauticSocialBundle\SocialEvents;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -77,6 +76,9 @@ class TweetModel extends FormModel implements AjaxLookupModelInterface
     /**
      * Create/update Tweet Stat and update sent count for Tweet.
      *
+     * @param Tweet  $tweet
+     * @param Lead   $lead
+     * @param array  $sendResponse
      * @param string $source
      * @param int    $sourceId
      *
@@ -137,6 +139,7 @@ class TweetModel extends FormModel implements AjaxLookupModelInterface
      * @param Tweet $entity
      * @param       $formFactory
      * @param null  $action
+     * @param array $options
      *
      * @return mixed
      *
@@ -152,7 +155,7 @@ class TweetModel extends FormModel implements AjaxLookupModelInterface
             $params['action'] = $action;
         }
 
-        return $formFactory->create(TweetType::class, $entity, $params);
+        return $formFactory->create('twitter_tweet', $entity, $params);
     }
 
     /**
@@ -160,11 +163,11 @@ class TweetModel extends FormModel implements AjaxLookupModelInterface
      *
      * @param int $id
      *
-     * @return Tweet|null
+     * @return null|Tweet
      */
     public function getEntity($id = null)
     {
-        if (null === $id) {
+        if ($id === null) {
             $entity = new Tweet();
         } else {
             $entity = parent::getEntity($id);
@@ -240,6 +243,6 @@ class TweetModel extends FormModel implements AjaxLookupModelInterface
      */
     public function getPermissionBase()
     {
-        return 'mauticSocial:tweets';
+        return 'plugin:mauticSocial:tweets';
     }
 }

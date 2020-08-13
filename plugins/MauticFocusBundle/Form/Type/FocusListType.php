@@ -4,10 +4,12 @@ namespace MauticPlugin\MauticFocusBundle\Form\Type;
 
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Class FocusListType.
+ */
 class FocusListType extends AbstractType
 {
     /**
@@ -17,12 +19,18 @@ class FocusListType extends AbstractType
 
     private $repo;
 
+    /**
+     * @param FocusModel $focusModel
+     */
     public function __construct(FocusModel $focusModel)
     {
         $this->focusModel = $focusModel;
         $this->repo       = $this->focusModel->getRepository();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
@@ -32,18 +40,18 @@ class FocusListType extends AbstractType
 
                     $list = $this->repo->getFocusList($options['data']);
                     foreach ($list as $row) {
-                        $choices[$row['name']] = $row['id'];
+                        $choices[$row['id']] = $row['name'];
                     }
 
                     //sort by language
-                    ksort($choices, SORT_NATURAL);
+                    ksort($choices);
 
                     return $choices;
                 },
                 'expanded'    => false,
                 'multiple'    => true,
                 'required'    => false,
-                'placeholder' => function (Options $options) {
+                'empty_value' => function (Options $options) {
                     return (empty($options['choices'])) ? 'mautic.focus.no.focusitem.note' : 'mautic.core.form.chooseone';
                 },
                 'disabled' => function (Options $options) {
@@ -59,7 +67,7 @@ class FocusListType extends AbstractType
     /**
      * @return string
      */
-    public function getBlockPrefix()
+    public function getName()
     {
         return 'focus_list';
     }
@@ -69,6 +77,6 @@ class FocusListType extends AbstractType
      */
     public function getParent()
     {
-        return ChoiceType::class;
+        return 'choice';
     }
 }

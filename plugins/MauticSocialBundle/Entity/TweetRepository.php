@@ -20,6 +20,7 @@ class TweetRepository extends CommonRepository
      * @param int    $limit
      * @param int    $start
      * @param bool   $viewOther
+     * @param array  $ignoreIds
      *
      * @return array
      */

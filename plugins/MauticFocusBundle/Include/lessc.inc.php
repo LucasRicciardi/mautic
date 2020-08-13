@@ -69,7 +69,7 @@ class lessc
     protected function findImport($url)
     {
         foreach ((array) $this->importDir as $dir) {
-            $full = $dir.('/' != substr($dir, -1) ? '/' : '').$url;
+            $full = $dir.(substr($dir, -1) != '/' ? '/' : '').$url;
             if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
                 return $file;
             }
@@ -99,25 +99,25 @@ class lessc
 
     protected function tryImport($importPath, $parentBlock, $out)
     {
-        if ('function' == $importPath[0] && 'url' == $importPath[1]) {
+        if ($importPath[0] == 'function' && $importPath[1] == 'url') {
             $importPath = $this->flattenList($importPath[2]);
         }
 
         $str = $this->coerceString($importPath);
-        if (null === $str) {
+        if ($str === null) {
             return false;
         }
 
         $url = $this->compileValue($this->lib_e($str));
 
         // don't import if it ends in css
-        if (0 === substr_compare($url, '.css', -4, 4)) {
+        if (substr_compare($url, '.css', -4, 4) === 0) {
             return false;
         }
 
         $realPath = $this->findImport($url);
 
-        if (null === $realPath) {
+        if ($realPath === null) {
             return false;
         }
 
@@ -135,7 +135,7 @@ class lessc
 
         // set the parents of all the block props
         foreach ($root->props as $prop) {
-            if ('block' == $prop[0]) {
+            if ($prop[0] == 'block') {
                 $prop[1]->parent = $parentBlock;
             }
         }
@@ -270,7 +270,7 @@ class lessc
     protected function mediaParent($scope)
     {
         while (!empty($scope->parent)) {
-            if (!empty($scope->type) && 'media' != $scope->type) {
+            if (!empty($scope->type) && $scope->type != 'media') {
                 break;
             }
             $scope = $scope->parent;
@@ -318,7 +318,7 @@ class lessc
         $comments = [];
 
         foreach ($lines as $line) {
-            if (0 === strpos($line, '/*')) {
+            if (strpos($line, '/*') === 0) {
                 $comments[] = $line;
                 continue;
             }
@@ -418,7 +418,7 @@ class lessc
     protected function multiplyMedia($env, $childQueries = null)
     {
         if (is_null($env)
-            || !empty($env->block->type) && 'media' != $env->block->type
+            || !empty($env->block->type) && $env->block->type != 'media'
         ) {
             return $childQueries;
         }
@@ -460,7 +460,7 @@ class lessc
     {
         $env       = $this->env;
         $selectors = null;
-        while (null !== $env) {
+        while ($env !== null) {
             if (isset($env->selectors)) {
                 $selectors = $env->selectors;
                 break;
@@ -537,7 +537,7 @@ class lessc
                     $this->zipSetArgs($block->args, $orderedArgs, $keywordArgs);
 
                     $negate = false;
-                    if ('negate' == $guard[0]) {
+                    if ($guard[0] == 'negate') {
                         $guard  = $guard[1];
                         $negate = true;
                     }
@@ -575,7 +575,7 @@ class lessc
         if ($keywordArgs) {
             $remainingArgs = [];
             foreach ($block->args as $arg) {
-                if ('arg' == $arg[0] && isset($keywordArgs[$arg[1]])) {
+                if ($arg[0] == 'arg' && isset($keywordArgs[$arg[1]])) {
                     continue;
                 }
 
@@ -634,7 +634,7 @@ class lessc
     // attempt to find blocks matched by path and args
     protected function findBlocks($searchIn, $path, $orderedArgs, $keywordArgs, $seen = [])
     {
-        if (null == $searchIn) {
+        if ($searchIn == null) {
             return null;
         }
         if (isset($seen[$searchIn->id])) {
@@ -646,7 +646,7 @@ class lessc
 
         if (isset($searchIn->children[$name])) {
             $blocks = $searchIn->children[$name];
-            if (1 == count($path)) {
+            if (count($path) == 1) {
                 $matches = $this->patternMatchAll($blocks, $orderedArgs, $keywordArgs, $seen);
                 if (!empty($matches)) {
                     // This will return all blocks that match in the closest
@@ -689,7 +689,7 @@ class lessc
 
         $i = 0;
         foreach ($args as $a) {
-            if ('arg' == $a[0]) {
+            if ($a[0] == 'arg') {
                 if (isset($keywordValues[$a[1]])) {
                     // has keyword arg
                     $value = $keywordValues[$a[1]];
@@ -716,7 +716,7 @@ class lessc
 
         // check for a rest
         $last = end($args);
-        if ('rest' == $last[0]) {
+        if ($last[0] == 'rest') {
             $rest = array_slice($orderedValues, count($args) - 1);
             $this->set($last[1], $this->reduce(['list', ' ', $rest]));
         }
@@ -773,7 +773,7 @@ class lessc
 
                 $mixins = $this->findBlocks($block, $path, $orderedArgs, $keywordArgs);
 
-                if (null === $mixins) {
+                if ($mixins === null) {
                     $this->throwError("{$prop[1][0]} is undefined");
                 }
 
@@ -802,8 +802,8 @@ class lessc
                     }
 
                     foreach ($this->sortProps($mixin->props) as $subProp) {
-                        if (null !== $suffix
-                            && 'assign' == $subProp[0]
+                        if ($suffix !== null
+                            && $subProp[0] == 'assign'
                             && is_string($subProp[1])
                             && $subProp[1][0] != $this->vPrefix
                         ) {
@@ -848,7 +848,7 @@ class lessc
 
                 $result = $this->tryImport($importPath, $block, $out);
 
-                $this->env->imports[$importId] = false === $result
+                $this->env->imports[$importId] = $result === false
                     ?
                     [false, '@import '.$this->compileValue($importPath).';']
                     :
@@ -858,7 +858,7 @@ class lessc
             case 'import_mixin':
                 list(, $importId) = $prop;
                 $import           = $this->env->imports[$importId];
-                if (false === $import[0]) {
+                if ($import[0] === false) {
                     if (isset($import[1])) {
                         $out->lines[] = $import[1];
                     }
@@ -904,7 +904,7 @@ class lessc
                 list(, $num, $unit) = $value;
                 // [1] - the number
                 // [2] - the unit
-                if (null !== $this->numberPrecision) {
+                if ($this->numberPrecision !== null) {
                     $num = round($num, $this->numberPrecision);
                 }
 
@@ -929,7 +929,7 @@ class lessc
                 $g                 = round($g);
                 $b                 = round($b);
 
-                if (5 == count($value) && 1 != $value[4]) { // rgba
+                if (count($value) == 5 && $value[4] != 1) { // rgba
                     return 'rgba('.$r.','.$g.','.$b.','.$value[4].')';
                 }
 
@@ -1018,19 +1018,19 @@ class lessc
         list($list, $idx) = $this->assertArgs($value, 2, 'extract');
         $idx              = $this->assertNumber($idx);
         // 1 indexed
-        if ('list' == $list[0] && isset($list[2][$idx - 1])) {
+        if ($list[0] == 'list' && isset($list[2][$idx - 1])) {
             return $list[2][$idx - 1];
         }
     }
 
     protected function lib_isnumber($value)
     {
-        return $this->toBool('number' == $value[0]);
+        return $this->toBool($value[0] == 'number');
     }
 
     protected function lib_isstring($value)
     {
-        return $this->toBool('string' == $value[0]);
+        return $this->toBool($value[0] == 'string');
     }
 
     protected function lib_iscolor($value)
@@ -1040,27 +1040,27 @@ class lessc
 
     protected function lib_iskeyword($value)
     {
-        return $this->toBool('keyword' == $value[0]);
+        return $this->toBool($value[0] == 'keyword');
     }
 
     protected function lib_ispixel($value)
     {
-        return $this->toBool('number' == $value[0] && 'px' == $value[2]);
+        return $this->toBool($value[0] == 'number' && $value[2] == 'px');
     }
 
     protected function lib_ispercentage($value)
     {
-        return $this->toBool('number' == $value[0] && '%' == $value[2]);
+        return $this->toBool($value[0] == 'number' && $value[2] == '%');
     }
 
     protected function lib_isem($value)
     {
-        return $this->toBool('number' == $value[0] && 'em' == $value[2]);
+        return $this->toBool($value[0] == 'number' && $value[2] == 'em');
     }
 
     protected function lib_isrem($value)
     {
-        return $this->toBool('number' == $value[0] && 'rem' == $value[2]);
+        return $this->toBool($value[0] == 'number' && $value[2] == 'rem');
     }
 
     protected function lib_rgbahex($color)
@@ -1093,12 +1093,12 @@ class lessc
      */
     protected function lib_data_uri($value)
     {
-        $mime = ('list' === $value[0]) ? $value[2][0][2] : null;
-        $url  = ('list' === $value[0]) ? $value[2][1][2][0] : $value[2][0];
+        $mime = ($value[0] === 'list') ? $value[2][0][2] : null;
+        $url  = ($value[0] === 'list') ? $value[2][1][2][0] : $value[2][0];
 
         $fullpath = $this->findImport($url);
 
-        if ($fullpath && false !== ($fsize = filesize($fullpath))) {
+        if ($fullpath && ($fsize = filesize($fullpath)) !== false) {
             // IE8 can't handle data uris larger than 32KB
             if ($fsize / 1024 < 32) {
                 if (is_null($mime)) {
@@ -1130,7 +1130,6 @@ class lessc
                     return $this->lib_e($items[0]);
                 }
                 $this->throwError('unrecognised input');
-                // no break
             case 'string':
                 $arg[1] = '';
 
@@ -1144,7 +1143,7 @@ class lessc
 
     protected function lib__sprintf($args)
     {
-        if ('list' != $args[0]) {
+        if ($args[0] != 'list') {
             return $args;
         }
         $values   = $args[2];
@@ -1173,7 +1172,7 @@ class lessc
             }
         }
 
-        $d = 'string' == $string[0] ? $string[1] : '"';
+        $d = $string[0] == 'string' ? $string[1] : '"';
 
         return ['string', $d, [$template]];
     }
@@ -1194,7 +1193,7 @@ class lessc
 
     protected function lib_round($arg)
     {
-        if ('list' != $arg[0]) {
+        if ($arg[0] != 'list') {
             $value = $this->assertNumber($arg);
 
             return ['number', round($value), $arg[2]];
@@ -1208,7 +1207,7 @@ class lessc
 
     protected function lib_unit($arg)
     {
-        if ('list' == $arg[0]) {
+        if ($arg[0] == 'list') {
             list($number, $newUnit) = $arg[2];
 
             return [
@@ -1227,7 +1226,7 @@ class lessc
      */
     public function colorArgs($args)
     {
-        if ('list' != $args[0] || count($args[2]) < 2) {
+        if ($args[0] != 'list' || count($args[2]) < 2) {
             return [['color', 0, 0, 0], 0];
         }
         list($color, $delta) = $args[2];
@@ -1358,7 +1357,7 @@ class lessc
     // http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#mix-instance_method
     protected function lib_mix($args)
     {
-        if ('list' != $args[0] || count($args[2]) < 2) {
+        if ($args[0] != 'list' || count($args[2]) < 2) {
             $this->throwError('mix expects (color1, color2, weight)');
         }
 
@@ -1378,7 +1377,7 @@ class lessc
         $w = $weight * 2 - 1;
         $a = $first_a - $second_a;
 
-        $w1 = ((-1 == $w * $a ? $w : ($w + $a) / (1 + $w * $a)) + 1) / 2.0;
+        $w1 = (($w * $a == -1 ? $w : ($w + $a) / (1 + $w * $a)) + 1) / 2.0;
         $w2 = 1.0 - $w1;
 
         $new = [
@@ -1388,7 +1387,7 @@ class lessc
             $w1 * $first[3] + $w2 * $second[3],
         ];
 
-        if (1.0 != $first_a || 1.0 != $second_a) {
+        if ($first_a != 1.0 || $second_a != 1.0) {
             $new[] = $first_a * $weight + $second_a * ($weight - 1);
         }
 
@@ -1401,7 +1400,7 @@ class lessc
         $lightColor = ['color', 255, 255, 255];
         $threshold  = 0.43;
 
-        if ('list' == $args[0]) {
+        if ($args[0] == 'list') {
             $inputColor = (isset($args[2][0])) ? $this->assertColor($args[2][0]) : $lightColor;
             $darkColor  = (isset($args[2][1])) ? $this->assertColor($args[2][1]) : $darkColor;
             $lightColor = (isset($args[2][2])) ? $this->assertColor($args[2][2]) : $lightColor;
@@ -1448,7 +1447,7 @@ class lessc
 
     public function assertNumber($value, $error = 'expecting number')
     {
-        if ('number' == $value[0]) {
+        if ($value[0] == 'number') {
             return $value[1];
         }
         $this->throwError($error);
@@ -1456,10 +1455,10 @@ class lessc
 
     public function assertArgs($value, $expectedArgs, $name = '')
     {
-        if (1 == $expectedArgs) {
+        if ($expectedArgs == 1) {
             return $value;
         } else {
-            if ('list' !== $value[0] || ',' != $value[1]) {
+            if ($value[0] !== 'list' || $value[1] != ',') {
                 $this->throwError('expecting list');
             }
             $values    = $value[2];
@@ -1478,7 +1477,7 @@ class lessc
 
     protected function toHSL($color)
     {
-        if ('hsl' == $color[0]) {
+        if ($color[0] == 'hsl') {
             return $color;
         }
 
@@ -1548,7 +1547,7 @@ class lessc
      */
     protected function toRGB($color)
     {
-        if ('color' == $color[0]) {
+        if ($color[0] == 'color') {
             return $color;
         }
 
@@ -1556,7 +1555,7 @@ class lessc
         $S = $color[2] / 100;
         $L = $color[3] / 100;
 
-        if (0 == $S) {
+        if ($S == 0) {
             $r = $g = $b = $L;
         } else {
             $temp2 = $L < 0.5
@@ -1592,19 +1591,19 @@ class lessc
     protected function funcToColor($func)
     {
         $fname = $func[1];
-        if ('list' != $func[2][0]) {
+        if ($func[2][0] != 'list') {
             return false;
         } // need a list of arguments
         $rawComponents = $func[2][2];
 
-        if ('hsl' == $fname || 'hsla' == $fname) {
+        if ($fname == 'hsl' || $fname == 'hsla') {
             $hsl = ['hsl'];
             $i   = 0;
             foreach ($rawComponents as $c) {
                 $val = $this->reduce($c);
                 $val = isset($val[1]) ? floatval($val[1]) : 0;
 
-                if (0 == $i) {
+                if ($i == 0) {
                     $clamp = 360;
                 } elseif ($i < 3) {
                     $clamp = 100;
@@ -1621,19 +1620,19 @@ class lessc
             }
 
             return $this->toRGB($hsl);
-        } elseif ('rgb' == $fname || 'rgba' == $fname) {
+        } elseif ($fname == 'rgb' || $fname == 'rgba') {
             $components = [];
             $i          = 1;
             foreach ($rawComponents as $c) {
                 $c = $this->reduce($c);
                 if ($i < 4) {
-                    if ('number' == $c[0] && '%' == $c[2]) {
+                    if ($c[0] == 'number' && $c[2] == '%') {
                         $components[] = 255 * ($c[1] / 100);
                     } else {
                         $components[] = floatval($c[1]);
                     }
-                } elseif (4 == $i) {
-                    if ('number' == $c[0] && '%' == $c[2]) {
+                } elseif ($i == 4) {
+                    if ($c[0] == 'number' && $c[2] == '%') {
                         $components[] = 1.0 * ($c[1] / 100);
                     } else {
                         $components[] = floatval($c[1]);
@@ -1663,7 +1662,7 @@ class lessc
                 $var     = $this->compileValue($reduced);
                 $res     = $this->reduce(['variable', $this->vPrefix.$var]);
 
-                if ('raw_color' == $res[0]) {
+                if ($res[0] == 'raw_color') {
                     $res = $this->coerceColor($res);
                 }
 
@@ -1701,7 +1700,7 @@ class lessc
             case 'string':
                 foreach ($value[2] as &$part) {
                     if (is_array($part)) {
-                        $strip = 'variable' == $part[0];
+                        $strip = $part[0] == 'variable';
                         $part  = $this->reduce($part);
                         if ($strip) {
                             $part = $this->lib_e($part);
@@ -1721,7 +1720,7 @@ class lessc
                 }
 
                 list(, $name, $args) = $value;
-                if ('%' == $name) {
+                if ($name == '%') {
                     $name = '_sprintf';
                 }
 
@@ -1729,7 +1728,7 @@ class lessc
                     $this->libFunctions[$name] : [$this, 'lib_'.str_replace('-', '_', $name)];
 
                 if (is_callable($f)) {
-                    if ('list' == $args[0]) {
+                    if ($args[0] == 'list') {
                         $args = self::compressList($args[2], $args[1]);
                     }
 
@@ -1766,7 +1765,7 @@ class lessc
                 list(, $op, $exp) = $value;
                 $exp              = $this->reduce($exp);
 
-                if ('number' == $exp[0]) {
+                if ($exp[0] == 'number') {
                     switch ($op) {
                         case '+':
                             return $exp;
@@ -1805,7 +1804,7 @@ class lessc
                 $c        = ['color', 0, 0, 0];
                 $colorStr = substr($value[1], 1);
                 $num      = hexdec($colorStr);
-                $width    = 3 == strlen($colorStr) ? 16 : 256;
+                $width    = strlen($colorStr) == 3 ? 16 : 256;
 
                 for ($i = 3; $i > 0; --$i) { // 3 2 1
                     $t = $num % $width;
@@ -1847,7 +1846,7 @@ class lessc
     // turn list of length 1 into value type
     protected function flattenList($value)
     {
-        if ('list' == $value[0] && 1 == count($value[2])) {
+        if ($value[0] == 'list' && count($value[2]) == 1) {
             return $this->flattenList($value[2][0]);
         }
 
@@ -1883,15 +1882,15 @@ class lessc
         $rtype = $right[0];
 
         // operators that work on all types
-        if ('and' == $op) {
+        if ($op == 'and') {
             return $this->toBool($left == self::$TRUE && $right == self::$TRUE);
         }
 
-        if ('=' == $op) {
+        if ($op == '=') {
             return $this->toBool($this->eq($left, $right));
         }
 
-        if ('+' == $op && !is_null($str = $this->stringConcatenate($left, $right))) {
+        if ($op == '+' && !is_null($str = $this->stringConcatenate($left, $right))) {
             return $str;
         }
 
@@ -1919,7 +1918,7 @@ class lessc
     protected function stringConcatenate($left, $right)
     {
         if ($strLeft = $this->coerceString($left)) {
-            if ('string' == $right[0]) {
+            if ($right[0] == 'string') {
                 $right[1] = '';
             }
             $strLeft[2][] = $right;
@@ -1951,14 +1950,14 @@ class lessc
 
     protected function op_number_color($op, $lft, $rgt)
     {
-        if ('+' == $op || '*' == $op) {
+        if ($op == '+' || $op == '*') {
             return $this->op_color_number($op, $rgt, $lft);
         }
     }
 
     protected function op_color_number($op, $lft, $rgt)
     {
-        if ('%' == $rgt[0]) {
+        if ($rgt[0] == '%') {
             $rgt[1] /= 100;
         }
 
@@ -1990,7 +1989,7 @@ class lessc
                     $out[] = $lval % $rval;
                     break;
                 case '/':
-                    if (0 == $rval) {
+                    if ($rval == 0) {
                         $this->throwError("evaluate error: can't divide by zero");
                     }
                     $out[] = $lval / $rval;
@@ -2053,7 +2052,7 @@ class lessc
                 $value = $left[1] % $right[1];
                 break;
             case '/':
-                if (0 == $right[1]) {
+                if ($right[1] == 0) {
                     $this->throwError('parse error: divide by zero');
                 }
                 $value = $left[1] / $right[1];
@@ -2143,7 +2142,7 @@ class lessc
         $this->pushEnv();
         $parser = new lessc_parser($this, __METHOD__);
         foreach ($args as $name => $strValue) {
-            if ('@' != $name[0]) {
+            if ($name[0] != '@') {
                 $name = '@'.$name;
             }
             $parser->count  = 0;
@@ -2162,7 +2161,7 @@ class lessc
      */
     public function __construct($fname = null)
     {
-        if (null !== $fname) {
+        if ($fname !== null) {
             // used for deprecated parse method
             $this->_parseFile = $fname;
         }
@@ -2215,7 +2214,7 @@ class lessc
 
         $this->importDir = $oldImport;
 
-        if (null !== $outFname) {
+        if ($outFname !== null) {
             return file_put_contents($outFname, $out);
         }
 
@@ -2284,7 +2283,7 @@ class lessc
             return null;
         }
 
-        if (null !== $root) {
+        if ($root !== null) {
             // If we have a root value which means we should rebuild.
             $out             = [];
             $out['root']     = $root;
@@ -2310,11 +2309,11 @@ class lessc
         }
 
         $oldVars = $this->registeredVars;
-        if (null !== $initialVariables) {
+        if ($initialVariables !== null) {
             $this->setVariables($initialVariables);
         }
 
-        if (null == $str) {
+        if ($str == null) {
             if (empty($this->_parseFile)) {
                 throw new exception('nothing to parse');
             }
@@ -2416,7 +2415,7 @@ class lessc
     // returns true when it compiles, false otherwise
     public static function ccompile($in, $out, $less = null)
     {
-        if (null === $less) {
+        if ($less === null) {
             $less = new self();
         }
 
@@ -2425,7 +2424,7 @@ class lessc
 
     public static function cexecute($in, $force = false, $less = null)
     {
-        if (null === $less) {
+        if ($less === null) {
             $less = new self();
         }
 
@@ -2941,7 +2940,7 @@ class lessc_parser
             $values[] = $exp;
         }
 
-        if (0 == count($values)) {
+        if (count($values) == 0) {
             return false;
         }
 
@@ -2998,7 +2997,7 @@ class lessc_parser
             $needWhite = $whiteBefore && !$this->inParens;
 
             if ($this->match(self::$operatorString.($needWhite ? '\s' : ''), $m) && self::$precedence[$m[1]] >= $minP) {
-                if (!$this->inParens && isset($this->env->currentProperty) && '/' == $m[1] && empty($this->env->supressedDivision)) {
+                if (!$this->inParens && isset($this->env->currentProperty) && $m[1] == '/' && empty($this->env->supressedDivision)) {
                     foreach (self::$supressDivisionProps as $pattern) {
                         if (preg_match($pattern, $this->env->currentProperty)) {
                             $this->env->supressedDivision = true;
@@ -3038,7 +3037,7 @@ class lessc_parser
     {
         $values = [];
 
-        if (null !== $keyName) {
+        if ($keyName !== null) {
             $this->env->currentProperty = $keyName;
         }
 
@@ -3055,11 +3054,11 @@ class lessc_parser
             $this->seek($s);
         }
 
-        if (null !== $keyName) {
+        if ($keyName !== null) {
             unset($this->env->currentProperty);
         }
 
-        if (0 == count($values)) {
+        if (count($values) == 0) {
             return false;
         }
 
@@ -3073,7 +3072,7 @@ class lessc_parser
         $s = $this->seek();
 
         // speed shortcut
-        if (isset($this->buffer[$this->count]) && '(' != $this->buffer[$this->count]) {
+        if (isset($this->buffer[$this->count]) && $this->buffer[$this->count] != '(') {
             return false;
         }
 
@@ -3101,7 +3100,7 @@ class lessc_parser
         $s = $this->seek();
 
         // speed shortcut
-        if (isset($this->buffer[$this->count]) && '-' == $this->buffer[$this->count]) {
+        if (isset($this->buffer[$this->count]) && $this->buffer[$this->count] == '-') {
             // negation
             if ($this->literal('-', false)
                 && (($this->variable($inner) && $inner = ['variable', $inner])
@@ -3225,7 +3224,7 @@ class lessc_parser
             }
         }
 
-        if (0 == count($parts)) {
+        if (count($parts) == 0) {
             $this->seek($s);
 
             return false;
@@ -3293,19 +3292,19 @@ class lessc_parser
 
             $this->count -= strlen($tok);
             if ($tok == $end) {
-                if (0 == $nestingLevel) {
+                if ($nestingLevel == 0) {
                     break;
                 } else {
                     --$nestingLevel;
                 }
             }
 
-            if (("'" == $tok || '"' == $tok) && $this->string($str)) {
+            if (($tok == "'" || $tok == '"') && $this->string($str)) {
                 $content[] = $str;
                 continue;
             }
 
-            if ('@{' == $tok && $this->interpolation($inter)) {
+            if ($tok == '@{' && $this->interpolation($inter)) {
                 $content[] = $inter;
                 continue;
             }
@@ -3320,7 +3319,7 @@ class lessc_parser
 
         $this->eatWhiteDefault = $oldWhite;
 
-        if (0 == count($content)) {
+        if (count($content) == 0) {
             return false;
         }
 
@@ -3356,7 +3355,7 @@ class lessc_parser
 
         while ($this->match($patt, $m, false)) {
             $content[] = $m[1];
-            if ('@{' == $m[2]) {
+            if ($m[2] == '@{') {
                 $this->count -= strlen($m[2]);
                 if ($this->interpolation($inter, false)) {
                     $content[] = $inter;
@@ -3364,7 +3363,7 @@ class lessc_parser
                     $this->count += strlen($m[2]);
                     $content[] = '@{'; // ignore it
                 }
-            } elseif ('\\' == $m[2]) {
+            } elseif ($m[2] == '\\') {
                 $content[] = $m[2];
                 if ($this->literal($delim, false)) {
                     $content[] = $delim;
@@ -3418,7 +3417,7 @@ class lessc_parser
         // speed shortcut
         if (isset($this->buffer[$this->count])) {
             $char = $this->buffer[$this->count];
-            if (!ctype_digit($char) && '.' != $char) {
+            if (!ctype_digit($char) && $char != '.') {
                 return false;
             }
         }
@@ -3472,7 +3471,7 @@ class lessc_parser
             }
 
             if ($this->$method($value)) {
-                if ('variable' == $value[0]) {
+                if ($value[0] == 'variable') {
                     $arg = ['arg', $value[1]];
                     $ss  = $this->seek();
 
@@ -3497,7 +3496,7 @@ class lessc_parser
             }
 
             if (!$this->literal($delim)) {
-                if (',' == $delim && $this->literal(';')) {
+                if ($delim == ',' && $this->literal(';')) {
                     // found new delim, convert existing args
                     $delim  = ';';
                     $method = 'propertyValue';
@@ -3566,7 +3565,7 @@ class lessc_parser
                 break;
             }
         }
-        if (0 == count($tags)) {
+        if (count($tags) == 0) {
             return false;
         }
 
@@ -3583,7 +3582,7 @@ class lessc_parser
             $this->literal('>');
         }
 
-        if (0 == count($tags)) {
+        if (count($tags) == 0) {
             return false;
         }
 
@@ -3594,7 +3593,7 @@ class lessc_parser
     protected function tagBracket(&$parts, &$hasExpression)
     {
         // speed shortcut
-        if (isset($this->buffer[$this->count]) && '[' != $this->buffer[$this->count]) {
+        if (isset($this->buffer[$this->count]) && $this->buffer[$this->count] != '[') {
             return false;
         }
 
@@ -3694,7 +3693,7 @@ class lessc_parser
                 continue;
             }
 
-            if (isset($this->buffer[$this->count]) && '@' == $this->buffer[$this->count]) {
+            if (isset($this->buffer[$this->count]) && $this->buffer[$this->count] == '@') {
                 if ($this->interpolation($interp)) {
                     $hasExpression = true;
                     $interp[2]     = true; // don't unescape
@@ -3768,7 +3767,7 @@ class lessc_parser
                 $func = ['function', $fname, $args];
 
                 return true;
-            } elseif ('url' == $fname) {
+            } elseif ($fname == 'url') {
                 // couldn't parse and in url? treat as string
                 $this->seek($sPreArgs);
                 if ($this->openString(')', $string) && $this->literal(')')) {
@@ -3836,7 +3835,7 @@ class lessc_parser
     {
         if ($this->literal(';', false)) {
             return true;
-        } elseif ($this->count == strlen($this->buffer) || '}' == $this->buffer[$this->count]) {
+        } elseif ($this->count == strlen($this->buffer) || $this->buffer[$this->count] == '}') {
             // if there is end of file or a closing block next then we don't need a ;
             return true;
         }
@@ -3863,7 +3862,7 @@ class lessc_parser
             }
         }
 
-        if (0 == count($guards)) {
+        if (count($guards) == 0) {
             $guards = null;
             $this->seek($s);
 
@@ -3886,7 +3885,7 @@ class lessc_parser
             }
         }
 
-        if (0 == count($guardGroup)) {
+        if (count($guardGroup) == 0) {
             $guardGroup = null;
             $this->seek($s);
 
@@ -3919,7 +3918,7 @@ class lessc_parser
 
     protected function literal($what, $eatWhitespace = null)
     {
-        if (null === $eatWhitespace) {
+        if ($eatWhitespace === null) {
             $eatWhitespace = $this->eatWhiteDefault;
         }
 
@@ -3957,13 +3956,13 @@ class lessc_parser
             }
         }
 
-        if (0 == count($items)) {
+        if (count($items) == 0) {
             $this->seek($s);
 
             return false;
         }
 
-        if ($flatten && 1 == count($items)) {
+        if ($flatten && count($items) == 1) {
             $out = $items[0];
         } else {
             $out = ['list', $delim, $items];
@@ -3996,7 +3995,7 @@ class lessc_parser
     // try to match something on head of buffer
     protected function match($regex, &$out, $eatWhitespace = null)
     {
-        if (null === $eatWhitespace) {
+        if ($eatWhitespace === null) {
             $eatWhitespace = $this->eatWhiteDefault;
         }
 
@@ -4050,7 +4049,7 @@ class lessc_parser
     // seek to a spot in the buffer or return where we are on no argument
     protected function seek($where = null)
     {
-        if (null === $where) {
+        if ($where === null) {
             return $this->count;
         } else {
             $this->count = $where;
@@ -4110,7 +4109,7 @@ class lessc_parser
     // append a property to the current block
     protected function append($prop, $pos = null)
     {
-        if (null !== $pos) {
+        if ($pos !== null) {
             $prop[-1] = $pos;
         }
         $this->env->props[] = $prop;
@@ -4143,7 +4142,7 @@ class lessc_parser
             // find the next item
             foreach ($look as $token) {
                 $pos = strpos($text, $token);
-                if (false !== $pos) {
+                if ($pos !== false) {
                     if (!isset($min) || $pos < $min[1]) {
                         $min = [$token, $pos];
                     }
@@ -4171,7 +4170,7 @@ class lessc_parser
                     break;
                 case '//':
                     $skip = strpos($text, "\n", $count);
-                    if (false === $skip) {
+                    if ($skip === false) {
                         $skip = strlen($text) - $count;
                     } else {
                         $skip -= $count;
@@ -4185,7 +4184,7 @@ class lessc_parser
                     break;
             }
 
-            if (0 == $skip) {
+            if ($skip == 0) {
                 $count += strlen($min[0]);
             }
 
@@ -4257,7 +4256,7 @@ class lessc_formatter_classic
 
         $isSingle = !$this->disableSingle
             && is_null($block->type)
-            && 1 == count($block->lines);
+            && count($block->lines) == 1;
 
         if (!empty($block->selectors)) {
             ++$this->indentLevel;

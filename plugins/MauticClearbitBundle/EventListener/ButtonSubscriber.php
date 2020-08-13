@@ -13,14 +13,12 @@ namespace MauticPlugin\MauticClearbitBundle\EventListener;
 
 use Mautic\CoreBundle\CoreEvents;
 use Mautic\CoreBundle\Event\CustomButtonEvent;
+use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\CoreBundle\Templating\Helper\ButtonHelper;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticClearbitBundle\Integration\ClearbitIntegration;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Translation\TranslatorInterface;
 
-class ButtonSubscriber implements EventSubscriberInterface
+class ButtonSubscriber extends CommonSubscriber
 {
     /**
      * @var IntegrationHelper
@@ -28,20 +26,13 @@ class ButtonSubscriber implements EventSubscriberInterface
     private $helper;
 
     /**
-     * @var RouterInterface
+     * ButtonSubscriber constructor.
+     *
+     * @param IntegrationHelper $helper
      */
-    private $translator;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $router;
-
-    public function __construct(IntegrationHelper $helper, TranslatorInterface $translator, RouterInterface $router)
+    public function __construct(IntegrationHelper $helper)
     {
-        $this->helper     = $helper;
-        $this->translator = $translator;
-        $this->router     = $router;
+        $this->helper = $helper;
     }
 
     public static function getSubscribedEvents()
@@ -51,6 +42,9 @@ class ButtonSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param CustomButtonEvent $event
+     */
     public function injectViewButtons(CustomButtonEvent $event)
     {
         /** @var ClearbitIntegration $myIntegration */
@@ -99,17 +93,17 @@ class ButtonSubscriber implements EventSubscriberInterface
                     'iconClass' => 'fa fa-search',
                 ];
 
-                $event->addButton(
-                    $lookupContactButton,
-                    ButtonHelper::LOCATION_PAGE_ACTIONS,
-                    ['mautic_contact_action', ['objectAction' => 'view']]
-                );
-
-                $event->addButton(
-                    $lookupContactButton,
-                    ButtonHelper::LOCATION_LIST_ACTIONS,
-                    'mautic_contact_index'
-                );
+                $event
+                    ->addButton(
+                        $lookupContactButton,
+                        ButtonHelper::LOCATION_PAGE_ACTIONS,
+                        ['mautic_contact_action', ['objectAction' => 'view']]
+                    )
+                    ->addButton(
+                        $lookupContactButton,
+                        ButtonHelper::LOCATION_LIST_ACTIONS,
+                        'mautic_contact_index'
+                    );
             }
         } else {
             if (0 === strpos($event->getRoute(), 'mautic_company_')) {
@@ -153,11 +147,12 @@ class ButtonSubscriber implements EventSubscriberInterface
                         'iconClass' => 'fa fa-search',
                     ];
 
-                    $event->addButton(
-                        $lookupCompanyButton,
-                        ButtonHelper::LOCATION_LIST_ACTIONS,
-                        'mautic_company_index'
-                    );
+                    $event
+                        ->addButton(
+                            $lookupCompanyButton,
+                            ButtonHelper::LOCATION_LIST_ACTIONS,
+                            'mautic_company_index'
+                        );
                 }
             }
         }
