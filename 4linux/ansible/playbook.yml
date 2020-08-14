@@ -3,4 +3,3 @@
   become: yes
   roles:
     - build_image
-    - install_plugins

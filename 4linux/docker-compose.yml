@@ -1,5 +1,8 @@
 version: '3.1'
 
+volumes:
+  mautic_mysql_data:
+
 services:
 
   mautic:
@@ -22,6 +25,10 @@ services:
   mautic_mysql:
     image: mysql:5.7
     restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - mautic_mysql_data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: mautic
       MYSQL_USER: mautic

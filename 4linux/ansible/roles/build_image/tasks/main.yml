@@ -1,5 +1,6 @@
 ---
 - name: Build image
-  command: ls
+  uri:
+    url:
     
     
